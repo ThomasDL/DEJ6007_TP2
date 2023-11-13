@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
 
     public GameObject bulletPrefab;
     public Transform gunPoint;
+    float delaySinceFiring = 0f;
 
     public Transform groundChecker;
     float groundDistance = 0.58f;
@@ -17,8 +18,14 @@ public class PlayerMovement : MonoBehaviour
     float gravity = -25f;
     float jumpForce = 15f;
 
+    List<Gun> gunList = new List<Gun>();
+
     Vector3 velocity;
- 
+    private void Start()
+    {
+        gunList.Add(new Gun("Machine Gun", 5, 90f, 0.001f, 15f, 0.2f));
+    }
+
     void Update()
     {
         float x = Input.GetAxis("Horizontal");
@@ -36,21 +43,48 @@ public class PlayerMovement : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-        if (Input.GetMouseButtonDown(0))
+
+        delaySinceFiring += Time.deltaTime;
+        if (Input.GetMouseButtonDown(0) && delaySinceFiring > gunList[0].gunCooldown)
         {
-            ShootBullet();
+            delaySinceFiring = 0f;
+            StartCoroutine(ShootBullet(gunList[0].bulletAmount, gunList[0].bulletSpeed, gunList[0].bulletDelay, gunList[0].bulletPrecision));
         }
     }
     bool IsGrounded()
     {
         return Physics.CheckSphere(groundChecker.position, groundDistance, LayerMask.GetMask("Ground"));
     }
-    void ShootBullet()
+    IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
     {
-        Debug.Log("Yeah");
-        float bulletForce = 50f;
-        Rigidbody bulletRigidBody = Instantiate(bulletPrefab, gunPoint.position, cam.transform.rotation).GetComponent<Rigidbody>();
-        bulletRigidBody.rotation = Quaternion.Euler(cam.transform.rotation.eulerAngles.x + 90, cam.transform.rotation.eulerAngles.y, cam.transform.rotation.eulerAngles.z);
-        bulletRigidBody.AddForce(bulletRigidBody.transform.forward * bulletForce, ForceMode.Impulse);
+        for(int i = 0; i < amount; i++)
+        {
+            Rigidbody bulletRigidBody = Instantiate(bulletPrefab, gunPoint.position, cam.transform.rotation).GetComponent<Rigidbody>();
+            bulletRigidBody.rotation = Quaternion.Euler(cam.transform.rotation.eulerAngles.x + 90, cam.transform.rotation.eulerAngles.y, cam.transform.rotation.eulerAngles.z);
+            bulletRigidBody.AddForce(bulletRigidBody.transform.forward * speed + Random.insideUnitSphere * precision, ForceMode.Impulse);
+            yield return new WaitForSeconds(delay);
+        }
+    }
+}
+public class Gun
+{
+    public string gunName;
+    public int bulletAmount;
+    public float bulletSpeed;
+    public float bulletDelay;
+    public float gunCooldown;
+
+    // 0 = precise, 15f = very imprecise
+    [Range(0f, 15f)]
+    public float bulletPrecision;
+
+    public Gun(string name, int amount, float speed, float delay, float precision, float cooldown)
+    {
+        gunName = name;
+        bulletAmount = amount;
+        bulletSpeed = speed;
+        bulletDelay = delay;
+        bulletPrecision = precision;
+        gunCooldown = cooldown;
     }
 }
