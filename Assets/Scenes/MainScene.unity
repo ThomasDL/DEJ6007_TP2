@@ -4211,6 +4211,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player_test_achraf
       objectReference: {fileID: 0}
+    - target: {fileID: 2396703812802120337, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4310,7 +4314,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9181495408487193210, guid: 1ad950ec95f2f1440bbfe99deac61579, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
