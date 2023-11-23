@@ -6,32 +6,27 @@ public class CatController : EnemyBase
 {
     float attackModeRepeatRate;
     float attackDistance = 8f;
+    float attackDelay = 1.2f;
+    int attackCount;
 
     private void Start()
     {
         attackModeRepeatRate = Random.Range(0.45f, 0.55f);
         InvokeRepeating("AttackMode", 0f, attackModeRepeatRate);
     }
-    private void Update()
+    private new void Update()
     {
-        timeSinceLastAttack += Time.deltaTime;
-        if (enemyState == EnemyState.Patrolling)
-        {
-            if(Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)
-            {
-                currentPatrolWaypoint = (currentPatrolWaypoint + 1) % patrolWaypoints.Length;
-                navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
-            }
-        }
+        base.Update();
         if (enemyState == EnemyState.Attacking)
         { 
-            if (Vector3.Distance(player.transform.position, transform.position) < attackDistance)
+            if (Vector3.Distance(player.transform.position, transform.position) < attackDistance && Mathf.Abs(Vector3.Angle(visionPoint.forward, player.transform.position - visionPoint.transform.position)) < 40)
             {
                 navMeshAgent.isStopped = true;
                 if(timeSinceLastAttack > attackDelay)
                 {
                     timeSinceLastAttack = 0;
-                    Debug.Log(gameObject.name + " is attacking the player!");
+                    Debug.Log(gameObject.name + " is attacking the player! " + attackCount);
+                    attackCount++;
                 }
             }
             else navMeshAgent.isStopped = false;
@@ -45,7 +40,7 @@ public class CatController : EnemyBase
             navMeshAgent.speed = attackSpeed;
             navMeshAgent.SetDestination(player.transform.position);
         }
-        else
+        else if (enemyState == EnemyState.Attacking)
         {
             enemyState = EnemyState.Patrolling;
             navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);

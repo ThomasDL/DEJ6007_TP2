@@ -17,8 +17,8 @@ public abstract class EnemyBase : MonoBehaviour
     protected GameObject player;
     public Transform visionPoint;
     public float visionDistance;
+    protected float proximity = 12f;
 
-    public float attackDelay;
     protected float timeSinceLastAttack;
 
     protected void Awake()
@@ -28,9 +28,22 @@ public abstract class EnemyBase : MonoBehaviour
         enemyState = EnemyState.Patrolling;
         navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
     }
+    protected void Update()
+    {
+        timeSinceLastAttack += Time.deltaTime;
+        if (enemyState == EnemyState.Patrolling)
+        {
+            if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)
+            {
+                currentPatrolWaypoint = (currentPatrolWaypoint + 1) % patrolWaypoints.Length;
+                navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
+            }
+        }
+    }
     protected bool CheckIfPlayerIsInSight()
     {
-        if (Vector3.Angle(visionPoint.forward, player.transform.position - visionPoint.transform.position) > 90) return false;
+        if (Mathf.Abs(Vector3.Angle(visionPoint.forward, player.transform.position - visionPoint.transform.position)) > 80
+            && Vector3.Distance(player.transform.position, visionPoint.transform.position) > proximity) return false;
         else
         {
             if (Physics.Raycast(visionPoint.position, player.transform.position - visionPoint.transform.position, visionDistance, LayerMask.GetMask("Player"))
