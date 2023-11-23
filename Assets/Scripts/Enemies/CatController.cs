@@ -5,7 +5,7 @@ using UnityEngine;
 public class CatController : EnemyBase
 {
     float attackModeRepeatRate;
-    float attackDistance = 8f;
+    float attackDistance = 6f;
     float attackDelay = 1.2f;
     int attackCount;
 
