@@ -19,8 +19,6 @@ public abstract class EnemyBase : MonoBehaviour
     public float visionDistance;
     protected float proximity = 12f;
 
-    protected float timeSinceLastAttack;
-
     protected void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -30,7 +28,6 @@ public abstract class EnemyBase : MonoBehaviour
     }
     protected void Update()
     {
-        timeSinceLastAttack += Time.deltaTime;
         if (enemyState == EnemyState.Patrolling)
         {
             if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)

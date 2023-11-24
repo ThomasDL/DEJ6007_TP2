@@ -10,10 +10,10 @@ public class SquirrelController : EnemyBase
 
     Rigidbody thisRigidbody;
 
-    float checkPlayerRepeatRate;
+    float checkPlayerRepeatRate = 0.5f;
     float turnDelay = 0.4f;
 
-    float timeSinceAttacking;
+    float timeSinceLastAttack;
     float nextAttackDelay;
     float attackRepeatMin = 0.6f;
     float attackRepeatMax = 1f;
@@ -31,21 +31,20 @@ public class SquirrelController : EnemyBase
     void Start()
     {
         thisRigidbody = GetComponent<Rigidbody>();
-        checkPlayerRepeatRate = Random.Range(0.45f, 0.55f);
         InvokeRepeating("SetEnemyState", 0f, checkPlayerRepeatRate);
     }
 
     new void Update()
     {
         base.Update();
-        timeSinceAttacking += Time.deltaTime;
+        timeSinceLastAttack += Time.deltaTime;
         timeSinceJumping += Time.deltaTime;
 
         if (enemyState == EnemyState.Attacking)
         {
-            if (timeSinceAttacking > nextAttackDelay)
+            if (timeSinceLastAttack > nextAttackDelay)
             {
-                timeSinceAttacking = 0f;
+                timeSinceLastAttack = 0f;
                 nextAttackDelay = Random.Range(attackRepeatMin, attackRepeatMax);
                 Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(Vector3.Normalize(player.transform.position - visionPoint.position) * attackForce, ForceMode.Impulse);
             }
