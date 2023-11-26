@@ -11,7 +11,7 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
 
     [SerializeField] private bool useAsGhost;
 
-    [HideInInspector] public static float _bulletSpeed = 32f;
+    private float _bulletSpeed = 32f;
     private Rigidbody _bullet_rb;
     public Transform groundChecker;
     float groundCheckRadius = 0.1f;
@@ -26,7 +26,7 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
 
     //[SerializeField] private float travelTimeDestroy = 1.5f;
     
-    //Only one teleportBullet should exist in the real scene
+    //A single teleportBullet should exist at all time
     public static TeleporterBulletBehavior_test Instance;
 
 
@@ -56,7 +56,18 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Physics.CheckSphere(groundChecker.position, groundCheckRadius,LayerMask.GetMask("Ground")) && !useAsGhost)
+        TranslocatePlayer();
+    }
+
+    public void Shoot_TP_Bullet()
+    {
+        this._bullet_rb.AddForce(this.gameObject.transform.forward * _bulletSpeed, ForceMode.Impulse);
+        translocatorScreen.SetActive(true);
+    }
+
+    private void TranslocatePlayer()
+    {
+        if (Physics.CheckSphere(groundChecker.position, groundCheckRadius, LayerMask.GetMask("Ground")) && !useAsGhost)
         {
             CheckCollisionWithFloor = true;
             translocatorBulletCamera.transform.rotation = Camera.main.transform.rotation;
@@ -72,11 +83,5 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
         }
         //Temporary solution to destroy the bullet if it takes too long
         //Destroy(gameObject, travelTimeDestroy);
-    }
-
-    public void Shoot_TP_Bullet()
-    {
-        this._bullet_rb.AddForce(this.gameObject.transform.forward * _bulletSpeed, ForceMode.Impulse);
-        translocatorScreen.SetActive(true);
     }
 }

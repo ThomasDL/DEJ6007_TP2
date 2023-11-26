@@ -4,20 +4,37 @@ using UnityEngine;
 
 public class TeleporterGun_TrajectoryLine : MonoBehaviour
 {
-    LineRenderer lineRenderer;
+    private LineRenderer lineRenderer;
 
     public Transform bulletSpawnPoint; // The point from which the bullet will be fired
-    public float launchForce = 32f; // The initial force that will be applied to the bullet
-    public int resolution = 30; // How many points will be calculated for the line
+    [SerializeField] private float launchForce = 32f; // The initial force that will be applied to the bullet
+    [SerializeField] private int resolution = 30; // How many points will be calculated for the line
+
+    private PlayerController_test _playerController;
 
     void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
     }
 
+    private void Start()
+    {
+        lineRenderer.enabled = false;
+        _playerController = GameObject.Find("Player_test_achraf").GetComponent<PlayerController_test>();
+    }
+
     void Update()
     {
-        DrawTrajectory();
+        //Only draw trajectory if CanShoot is true
+        if (_playerController.CanShoot)
+        {
+            lineRenderer.enabled = true;
+            DrawTrajectory();
+        }
+        else
+        {
+            lineRenderer.enabled = false;
+        }
     }
 
     void DrawTrajectory()

@@ -38,6 +38,11 @@ public class PlayerController_test : MonoBehaviour
 
     private bool canShoot;
 
+    public bool CanShoot
+    {
+        get { return canShoot; }
+    }
+
     #endregion
 
     #region ClippingPrevention
@@ -59,6 +64,7 @@ public class PlayerController_test : MonoBehaviour
     {
         if(Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance))
         {
+            //Debug.Log("lerpPosition = " + lerpPosition);
             //Get percentage from 0 to max distance
             lerpPosition = 1 - (hit.distance / checkDistance);
         }
