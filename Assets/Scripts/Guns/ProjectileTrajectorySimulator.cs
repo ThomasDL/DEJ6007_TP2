@@ -52,7 +52,7 @@ public class ProjectileTrajectorySimulator : MonoBehaviour
 
         for (int i = 0; i < maxPhysicsFrameIterations; i++)
         {
-            physicsScene.Simulate(Time.fixedDeltaTime * 2);
+            physicsScene.Simulate(Time.fixedDeltaTime);
             lineRenderer.SetPosition(i, ghostProjectile.transform.position);
         }
 

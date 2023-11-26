@@ -4,34 +4,83 @@ using UnityEngine;
 
 public class PlayerController_test : MonoBehaviour
 {
-    public CharacterController controller;
-    public Camera cam;
+    #region Movement
 
+    [Header("References")]
+    [SerializeField] private CharacterController controller;
+    [SerializeField] private Camera cam;
+    [SerializeField] private Transform groundChecker;
+    [SerializeField] private GameObject translocatorScreen;
+
+    private float groundCheckDistance = 0.58f;
+
+    private float speed = 12f;
+    private float gravity = -25f;
+    private float jumpForce = 15f;
+
+    Vector3 verticalVelocity;
+
+    private bool isGrounded;
+
+    #endregion
+
+
+    #region Weapons
+
+    [Header("Weapons settings")]
     public Gun_test[] gunList;
     public GameObject[] gunObjets;
     public Transform gunPoint;
     float delaySinceFiring = 0f;
+
     [HideInInspector] public int currentGun;
+    private int lastGun;
 
-    public Transform groundChecker;
-    float groundCheckDistance = 0.58f;
+    private bool canShoot;
 
-    float speed = 12f;
-    float gravity = -25f;
-    float jumpForce = 15f;
+    #endregion
 
-    bool isGrounded;
+    #region ClippingPrevention
 
-    int lastGun;
+    [Header("Weapon clipping prevention")]
+    [SerializeField] private GameObject weapon;
+    [SerializeField] private GameObject clipProjector;
+    [SerializeField] private float checkDistance;
+    [Tooltip("Set the rotation to prevent clipping. Default is (0, -90, 0)")]
+    [SerializeField] private Vector3 newDirection = new Vector3(0, -90, 0);
 
-    Vector3 verticalVelocity;
+    // Threshold compared to weapon rotation when near an obstacle
+    private float shootDisableThreshold = 0.15f;
 
-    [SerializeField] private ProjectileTrajectorySimulator _projection;
+    private float lerpPosition;
+    RaycastHit hit;
+
+    private void PreventClip()
+    {
+        if(Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance))
+        {
+            //Get percentage from 0 to max distance
+            lerpPosition = 1 - (hit.distance / checkDistance);
+        }
+        else
+        {
+            //if we are not hitting anything, set to 0
+            lerpPosition = 0;
+        }
+
+        lerpPosition = Mathf.Clamp01(lerpPosition);
+        weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
+
+        // Disable shooting if the weapon is rotated significantly
+        canShoot = lerpPosition < shootDisableThreshold;
+    }
+
+    #endregion
 
     private void Start()
     {
         isGrounded = IsGrounded();
-        _projection = _projection.gameObject.GetComponent<ProjectileTrajectorySimulator>();
+        canShoot = true;
     }
 
     void Update()
@@ -41,7 +90,6 @@ public class PlayerController_test : MonoBehaviour
         float z = Input.GetAxis("Vertical");
 
         Vector3 move = transform.right * x + transform.forward * z;
-        //if (move != Vector3.zero) _projection.ResetTrajectorySimulation();
         controller.Move(move * speed * Time.deltaTime);
 
         // Groundcheck + jump code
@@ -55,9 +103,11 @@ public class PlayerController_test : MonoBehaviour
         verticalVelocity.y += gravity * Time.deltaTime;
         controller.Move(verticalVelocity * Time.deltaTime);
 
+        PreventClip();
+
         // Shooting code
         delaySinceFiring += Time.deltaTime;
-        if (Input.GetButtonDown("Fire1") && delaySinceFiring > gunList[currentGun].gunCooldown)
+        if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
         {
             delaySinceFiring = 0f;
             StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed, gunList[currentGun].bulletDelay, gunList[currentGun].bulletPrecision));
@@ -70,19 +120,18 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (lastGun != currentGun) SwitchGun(lastGun);
-
-        if (currentGun == 2) _projection.SimulateTrajectory(gunPoint.position);
     }
+
     void SwitchGun(int lastGun)
     {
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
     }
+
     bool IsGrounded()
     {
         return Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
     }
- 
 
     IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
     {
@@ -93,16 +142,8 @@ public class PlayerController_test : MonoBehaviour
             //Special behavior for Teleporter Gun
             if (currentGun == 2)
             {
-                Debug.Log("PC gunList[currentGun].bulletSpeed = " + gunList[currentGun].bulletSpeed);
-               
-
-                //if (bulletObject == null)
-                //{
-                //    Debug.LogError("TeleporterBulletBehavior component not found on the instantiated object");
-                //    continue;
-                //}
-
                 Debug.Log("Shooting TP Bullet");
+                bulletObject.GetComponent<TeleporterBulletBehavior_test>().GetTranslocatorScreenReference(translocatorScreen);
                 bulletObject.GetComponent<TeleporterBulletBehavior_test>().Shoot_TP_Bullet();
             }
             else
