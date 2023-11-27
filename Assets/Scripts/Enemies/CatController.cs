@@ -10,8 +10,11 @@ public class CatController : EnemyBase
     int attackCount;
     float timeSinceLastAttack;
 
+    Animator catAnim;
+
     private void Start()
     {
+        catAnim = GetComponentInChildren<Animator>();
         InvokeRepeating("DecisionCheck", 0f, attackModeRepeatRate);
     }
     private new void Update()
@@ -26,12 +29,21 @@ public class CatController : EnemyBase
                 if(timeSinceLastAttack > attackDelay)
                 {
                     timeSinceLastAttack = 0;
-                    Debug.Log(gameObject.name + " is attacking the player! " + attackCount);
+                    catAnim.SetTrigger("Attack");
+                    Debug.Log("Cat has attacked " + attackCount);
                     attackCount++;
                 }
             }
             else navMeshAgent.isStopped = false;
         }
+        HandleWalk();
+    }
+    void HandleWalk()
+    {
+        previousPosition = currentPosition;
+        currentPosition = transform.position;
+        float speed = Vector3.Distance(currentPosition, previousPosition) / Time.deltaTime;
+        catAnim.SetFloat("Speed", speed);
     }
     void DecisionCheck()
     {

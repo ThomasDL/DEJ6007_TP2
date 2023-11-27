@@ -7,24 +7,26 @@ public class BossController : EnemyBase
     Rigidbody bossRigidbody;
     public ParticleSystem jumpForceParticles;
     public GameObject grenadePrefab;
+    Animator bossAnim;
 
     float visionCheckRate = 0.61f;
-    float rotationSpeed = 40f;
+    float rotationSpeed = 50f;
 
     bool isAttacking = false;
 
     public Transform grenadeThrowPoint;
-    float strafeJumpForce = 15f;
+    float strafeJumpForce = 3000f;
     float grenadeWaitTime = 0.6f;
     float grenadeThrowForce = 4.6f;
 
-    float jumpForce = 105f;
+    float jumpForce = 1105000f;
     float jumpWaitTime = 1f;
     bool isJumping = false;
     float jumpImpactRadius = 10f;
 
     void Start()
     {
+        bossAnim = GetComponentInChildren<Animator>();
         bossRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("VisionCheck", visionCheckRate, visionCheckRate);
     }
@@ -32,7 +34,14 @@ public class BossController : EnemyBase
 
     new void Update()
     {
-        
+        HandleWalk(); 
+    }
+    void HandleWalk()
+    {
+        previousPosition = currentPosition;
+        currentPosition = transform.position;
+        float speed = Vector3.Distance(currentPosition, previousPosition) / Time.deltaTime;
+        bossAnim.SetFloat("Speed", speed);
     }
     private void FixedUpdate()
     {
@@ -88,15 +97,20 @@ public class BossController : EnemyBase
     }
     void JumpingAttack()
     {
+        bossRigidbody.velocity = Vector3.zero;
         isAttacking = true;
-        bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce), ForceMode.Impulse);
+        float jumpTotal = Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce);
+        bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * jumpTotal + transform.up * jumpTotal, ForceMode.Impulse);
         isJumping = true;
+        bossAnim.SetFloat("JumpLength", 15000000 / (jumpTotal * jumpTotal));
+        bossAnim.SetTrigger("Jump");
     }
     IEnumerator GrenadeAttack()
     {
         isAttacking = true;
         bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f,1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
+        bossAnim.SetTrigger("Tongue");
         Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
         grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
@@ -108,6 +122,7 @@ public class BossController : EnemyBase
         {
             isJumping = false;
             jumpForceParticles.Play();
+            bossAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
                 Debug.Log("Player has been hit by a massive jump");
