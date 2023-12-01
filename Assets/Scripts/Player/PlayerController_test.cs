@@ -13,8 +13,9 @@ public class PlayerController_test : MonoBehaviour
     #region Movement
 
     [Header("Horizontal movement")]
-    [SerializeField] private float walkSpeed = 12f;
-    [SerializeField] private float sprintSpeed = 24f;
+    [SerializeField] private float walkSpeed = 8f;
+    [SerializeField] private float sprintSpeed = 16f;
+    private float crouchSpeed; // will be assigned in start as 40% of walkspeed
 
     [Header("Vertical movement")]
     [SerializeField] private float gravity = -25f;
@@ -118,6 +119,7 @@ public class PlayerController_test : MonoBehaviour
     {
         isGrounded = IsGrounded();
         canShoot = true;
+        crouchSpeed = walkSpeed * 0.4f;
     }
 
     void Update()
@@ -158,7 +160,7 @@ public class PlayerController_test : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        float speed = IsSprinting ? sprintSpeed : walkSpeed;
+        float speed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
 
         Vector3 move = transform.right * x + transform.forward * z;
         controller.Move(move * speed * Time.deltaTime);

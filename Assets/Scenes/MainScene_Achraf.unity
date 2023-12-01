@@ -4321,6 +4321,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: sprintSpeed
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: timeToCrouch
       value: 0.2
       objectReference: {fileID: 0}
