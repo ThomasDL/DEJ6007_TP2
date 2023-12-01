@@ -14,7 +14,8 @@ public class PlayerController_test : MonoBehaviour
 
     [Header("Horizontal movement")]
     [SerializeField] private float walkSpeed = 8f;
-    [SerializeField] private float sprintSpeed = 16f;
+    [SerializeField] private float sprintSpeed = 14f;
+    [SerializeField] private float slopeSpeed = 16f;
     private float crouchSpeed; // will be assigned in start as a % of walkspeed
     private Vector3 moveDirection;
     private float moveSpeed;
@@ -29,10 +30,11 @@ public class PlayerController_test : MonoBehaviour
     private bool isGrounded;
 
     [Header("Modular movement options")]
-    [SerializeField] private bool canSprint = true; // Toggle sprint functionality
-    [SerializeField] private bool canJump = true; // Toggle jump functionality
-    [SerializeField] private bool canCrouch = true; // Toggle crouch functionality
-    [SerializeField] private bool canUseHeadBob = true; // Toggle crouch functionality
+    [SerializeField] private bool canSprint = true; // Enable sprint logic
+    [SerializeField] private bool canJump = true; // Enable jump logic
+    [SerializeField] private bool canCrouch = true; // Enable crouch logic
+    [SerializeField] private bool canUseHeadBob = true; // Enable Head bob logic
+    [SerializeField] private bool willSlideOnSlopes = true; // Enable slopes logic
 
     // Sprint and Jump controls
     private KeyCode sprintKey = KeyCode.LeftShift;

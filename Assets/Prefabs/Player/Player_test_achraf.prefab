@@ -325,16 +325,23 @@ MonoBehaviour:
   walkSpeed: 10
   sprintSpeed: 16
   gravity: -30
-  jumpForce: 12
+  jumpForce: 15
   groundCheckDistance: 0.25
   canSprint: 1
   canJump: 1
   canCrouch: 1
+  canUseHeadBob: 1
   crouchHeight: 1.8
   standingHeight: 3.6
-  timeToCrouch: 0.2
+  timeToCrouch: 0.1
   crouchingCenter: {x: 0, y: 1, z: 0}
   standingCenter: {x: 0, y: 0, z: 0}
+  walkBobSpeed: 14
+  walkBobAmount: 0.1
+  sprintBobSpeed: 18
+  sprintBobAmount: 0.2
+  crouchBobSpeed: 8
+  crouchBobAmount: 0.05
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
@@ -374,7 +381,7 @@ MonoBehaviour:
   translocatorScreen: {fileID: 7186489846273115849}
   weapon: {fileID: 7412424657373415461}
   clipProjector: {fileID: 3945841803772249842}
-  checkDistance: 1.5
+  checkDistance: 1
   ignoredLayers:
     serializedVersion: 2
     m_Bits: 1920
@@ -926,7 +933,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.2
   far clip plane: 1000
   field of view: 70
   orthographic: 0
