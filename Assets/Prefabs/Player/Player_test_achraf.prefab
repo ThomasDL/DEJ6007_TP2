@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2183748090638752308}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: GunPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3354939674604115507}
   - component: {fileID: 9114170335075939592}
   - component: {fileID: 3160630541497589501}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Sniper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -150,7 +150,7 @@ GameObject:
   - component: {fileID: 2431653704287831633}
   - component: {fileID: 8106305758403533189}
   - component: {fileID: 3814929689584068310}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Shotgun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -256,7 +256,7 @@ GameObject:
   - component: {fileID: 5033980705324155347}
   - component: {fileID: 8366251379855116509}
   - component: {fileID: 5554102709768210737}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player_test_achraf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -303,7 +303,7 @@ CharacterController:
   m_Radius: 0.6
   m_SlopeLimit: 45
   m_StepOffset: 0.7
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.06
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5554102709768210737
@@ -322,17 +322,17 @@ MonoBehaviour:
   cam: {fileID: 6740322258806411974}
   groundChecker: {fileID: 4797186735741915639}
   capsuleCharacter: {fileID: 6356643009802062552}
-  walkSpeed: 8
-  sprintSpeed: 12
+  walkSpeed: 10
+  sprintSpeed: 16
   gravity: -30
   jumpForce: 12
-  groundCheckDistance: 0.58
+  groundCheckDistance: 0.25
   canSprint: 1
   canJump: 1
   canCrouch: 1
   crouchHeight: 1.8
   standingHeight: 3.6
-  timeToCrouch: 0.25
+  timeToCrouch: 0.2
   crouchingCenter: {x: 0, y: 1, z: 0}
   standingCenter: {x: 0, y: 0, z: 0}
   gunList:
@@ -375,6 +375,9 @@ MonoBehaviour:
   weapon: {fileID: 7412424657373415461}
   clipProjector: {fileID: 3945841803772249842}
   checkDistance: 1.5
+  ignoredLayers:
+    serializedVersion: 2
+    m_Bits: 1920
   newDirection: {x: 0, y: -90, z: 0}
 --- !u!1 &3514266938134504868
 GameObject:
@@ -385,7 +388,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4797186735741915639}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GroundChecker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -416,7 +419,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1599360897669225723}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: clipProjector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -432,7 +435,7 @@ Transform:
   m_GameObject: {fileID: 3945841803772249842}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.353, z: 0.47}
+  m_LocalPosition: {x: 0, y: 0.063, z: 0.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -452,7 +455,7 @@ GameObject:
   - component: {fileID: 8584645254655755785}
   - component: {fileID: 7598424566611139912}
   - component: {fileID: 4464352737011632742}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Teleporter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -676,7 +679,7 @@ GameObject:
   - component: {fileID: 1200968980767893425}
   - component: {fileID: 3319765637282749522}
   - component: {fileID: 6823428518540019485}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1015,6 +1018,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2183748090638752308}
     - target: {fileID: 3090255399495965903, guid: 72ed8714f3781ad4b95d0b3a2088176d, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3090255399495965903, guid: 72ed8714f3781ad4b95d0b3a2088176d, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -1025,6 +1032,10 @@ PrefabInstance:
     - target: {fileID: 7038936125948021633, guid: 72ed8714f3781ad4b95d0b3a2088176d, type: 3}
       propertyPath: m_Name
       value: Translocator
+      objectReference: {fileID: 0}
+    - target: {fileID: 7038936125948021633, guid: 72ed8714f3781ad4b95d0b3a2088176d, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7038936125948021633, guid: 72ed8714f3781ad4b95d0b3a2088176d, type: 3}
       propertyPath: m_IsActive
