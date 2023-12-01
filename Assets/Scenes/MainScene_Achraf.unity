@@ -4280,33 +4280,45 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player_test_achraf
       objectReference: {fileID: 0}
+    - target: {fileID: 4797186735741915639, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797186735741915639, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797186735741915639, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20.21
+      value: -20.98
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.58
+      value: 6.79
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.57
+      value: 15.28
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.96735275
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.25343385
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -4314,39 +4326,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -29.362
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: jumpForce
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: timeToCrouch
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: checkDistance
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: walkBobAmount
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: crouchBobAmount
-      value: 0.05
-      objectReference: {fileID: 0}
-    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: sprintBobAmount
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6740322258806411974, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: near clip plane
-      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 7598424566611139912, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: obstaclesParent

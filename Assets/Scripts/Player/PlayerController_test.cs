@@ -25,6 +25,11 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float gravity = -30f;
     [SerializeField] private float jumpForce = 12f;
 
+    [Header("Coyote Time")]
+    private float coyoteTimeDuration = 15f / 60f; // A coyote jump timeframe equivalent to 15 frames at 60 FPS
+    private float timeSinceUngrounded = 0f;
+    private bool justJumped = false;
+
     Vector3 verticalVelocity;
     [SerializeField] private float groundCheckDistance = 0.25f;
     private bool isGrounded;
@@ -44,7 +49,8 @@ public class PlayerController_test : MonoBehaviour
     // Properties to control movement + sprinting, jumping, and crouching
     public bool CanMove { get; private set; } = true;
     private bool IsSprinting => canSprint && Input.GetKey(sprintKey);
-    private bool ShouldJump => Input.GetKeyDown(jumpKey) && isGrounded;
+    //private bool ShouldJump => Input.GetKeyDown(jumpKey) && isGrounded;
+    private bool ShouldJump => Input.GetKeyDown(jumpKey);
     private bool ShouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && isGrounded;
 
     [Header("Crouching parameters")]
@@ -151,6 +157,9 @@ public class PlayerController_test : MonoBehaviour
 
     void Update()
     {
+        // Groundcheck
+        isGrounded = IsGrounded();
+
         if (CanMove)
         {
             HandleMovementInput();
@@ -175,28 +184,50 @@ public class PlayerController_test : MonoBehaviour
         startedSprinting = Input.GetKeyDown(sprintKey);
 
         moveDirection = transform.right * x + transform.forward * z;
-        controller.Move(moveDirection * moveSpeed * Time.deltaTime);
+        controller.Move(moveSpeed * Time.deltaTime * moveDirection);
 
-        // Groundcheck + jump code
-        isGrounded = IsGrounded();
         if (isGrounded)
         {
             moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
             verticalVelocity.y = 0f;
-        } 
+        }
     }
 
     private void HandleJump()
     {
-        if (ShouldJump)
+        
+        if (isGrounded)
         {
-            verticalVelocity.y = jumpForce;
+            //Reset consumed coyote time and justJumped flag
+            timeSinceUngrounded = 0f;
+            if (justJumped == true) justJumped = false;
+            
+            //Perform regular jump when grounded
+            if (ShouldJump)
+            {
+                justJumped = true;
+                verticalVelocity.y = jumpForce;
+            }
         }
+        else // Apply gravity and update coyote time and justJumped flag
+        {
+            verticalVelocity.y += gravity * Time.deltaTime;
 
-        if (!isGrounded) verticalVelocity.y += gravity * Time.deltaTime;
+            timeSinceUngrounded += Time.deltaTime;
+            bool canCoyoteJump = (timeSinceUngrounded <= coyoteTimeDuration) && (justJumped == false);
+
+            //Perform jump using coyote time
+            if (ShouldJump && canCoyoteJump && !justJumped)
+            {
+                justJumped = true;
+                Debug.Log("JUMP using COYOTE TIME");
+                verticalVelocity.y = jumpForce;
+            }
+        }
 
         controller.Move(verticalVelocity * Time.deltaTime);
     }
+
     private void HandleCrouch()
     {
         //Player can exit crouching either by pressing crouchKey again or when player starts running
@@ -303,7 +334,8 @@ public class PlayerController_test : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.magenta;
-        Gizmos.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z));
+        //Gizmos.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z));
+        Gizmos.DrawWireSphere(groundChecker.position, groundCheckDistance);
     }
 
     void SwitchGun(int lastGun)
@@ -314,8 +346,16 @@ public class PlayerController_test : MonoBehaviour
 
     bool IsGrounded()
     {
-        Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.red);
-        return Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
+        bool grounded = Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
+        if (grounded)
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.red);
+        }
+        else
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.blue);
+        }
+        return grounded;
     }
 
     IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
