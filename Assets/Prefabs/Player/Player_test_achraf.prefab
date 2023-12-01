@@ -278,7 +278,6 @@ Transform:
   m_Children:
   - {fileID: 1200968980767893425}
   - {fileID: 6342926885756510103}
-  - {fileID: 4797186735741915639}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &8366251379855116509
@@ -322,7 +321,20 @@ MonoBehaviour:
   controller: {fileID: 8366251379855116509}
   cam: {fileID: 6740322258806411974}
   groundChecker: {fileID: 4797186735741915639}
-  translocatorScreen: {fileID: 7186489846273115849}
+  capsuleCharacter: {fileID: 6356643009802062552}
+  walkSpeed: 8
+  sprintSpeed: 12
+  gravity: -30
+  jumpForce: 12
+  groundCheckDistance: 0.58
+  canSprint: 1
+  canJump: 1
+  canCrouch: 1
+  crouchHeight: 1.8
+  standingHeight: 3.6
+  timeToCrouch: 0.25
+  crouchingCenter: {x: 0, y: 1, z: 0}
+  standingCenter: {x: 0, y: 0, z: 0}
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
@@ -359,6 +371,7 @@ MonoBehaviour:
   - {fileID: 6478132383620552082}
   gunPoint: {fileID: 2183748090638752308}
   currentGun: 0
+  translocatorScreen: {fileID: 7186489846273115849}
   weapon: {fileID: 7412424657373415461}
   clipProjector: {fileID: 3945841803772249842}
   checkDistance: 1.5
@@ -387,12 +400,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3514266938134504868}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.34, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5033980705324155347}
+  m_Father: {fileID: 1200968980767893425}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3945841803772249842
 GameObject:
@@ -683,6 +696,7 @@ Transform:
   m_LocalScale: {x: 1.2, y: 1.8, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4797186735741915639}
   - {fileID: 1599360897669225723}
   m_Father: {fileID: 5033980705324155347}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
