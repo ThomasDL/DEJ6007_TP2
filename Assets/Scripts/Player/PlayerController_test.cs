@@ -125,7 +125,7 @@ public class PlayerController_test : MonoBehaviour
         if (CanMove)
         {
             HandleMovementInput();
-            if(canJump) HandleJump();
+            if (canJump) HandleJump();
             if (canCrouch)
             {
                 HandleCrouch();
@@ -175,7 +175,7 @@ public class PlayerController_test : MonoBehaviour
             verticalVelocity.y = jumpForce;
         }
 
-        if(!isGrounded && !duringCrouchAnimation) verticalVelocity.y += gravity * Time.deltaTime;
+        if (!isGrounded) verticalVelocity.y += gravity * Time.deltaTime;
 
         controller.Move(verticalVelocity * Time.deltaTime);
     }
@@ -196,6 +196,7 @@ public class PlayerController_test : MonoBehaviour
 
         float timeElapsed = 0f;
         float targetHeight = isCrouching ? standingHeight : crouchHeight;
+        float targetCapsuleYPositon = isCrouching ? 0f : 1f;
         float currentHeight = controller.height;
         Vector3 targetCenter = isCrouching ? standingCenter : crouchingCenter;
         Vector3 currentCenter = controller.center;
@@ -203,31 +204,42 @@ public class PlayerController_test : MonoBehaviour
         float currentCapsuleHeight = capsuleCharacter.transform.localScale.y;
         Vector3 currentCapsulePosition = capsuleCharacter.transform.localPosition;
 
-
+        // Define a small lift amount when standing up
+        float initialPlayerYPosition = transform.position.y;
+        float liftAmount = isCrouching ? 1.93f : 0f; // Lift player slightly when standing up
 
         while (timeElapsed < timeToCrouch)
         {
-            // Modify the capsuleCharacter's scale
             float newCapsuleHeight = Mathf.Lerp(currentCapsuleHeight, targetHeight / 2f, timeElapsed / timeToCrouch);
             capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, newCapsuleHeight, capsuleCharacter.transform.localScale.z);
 
-            // Gradually move the capsule position to 1 on the Y-axis
-            float newYPosition = Mathf.Lerp(currentCapsulePosition.y, 1f, timeElapsed / timeToCrouch);
+            float newYPosition = Mathf.Lerp(currentCapsulePosition.y, targetCapsuleYPositon, timeElapsed / timeToCrouch);
             capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, newYPosition, capsuleCharacter.transform.localPosition.z);
 
             controller.height = Mathf.Lerp(currentHeight, targetHeight, timeElapsed / timeToCrouch);
             controller.center = Vector3.Lerp(currentCenter, targetCenter, timeElapsed / timeToCrouch);
 
+            // Gradually lift the player when standing up
+            if (isCrouching)
+            {
+                transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount * (timeElapsed / timeToCrouch), transform.position.z);
+            }
+
             timeElapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Ensure exact target values are set
         capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, targetHeight / 2f, capsuleCharacter.transform.localScale.z);
-        capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, 1f, capsuleCharacter.transform.localPosition.z);
+        capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, targetCapsuleYPositon, capsuleCharacter.transform.localPosition.z);
 
         controller.height = targetHeight;
         controller.center = targetCenter;
+
+        // Reset player position after standing up
+        if (isCrouching)
+        {
+            transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount, transform.position.z);
+        }
 
         isCrouching = !isCrouching;
         duringCrouchAnimation = false;
@@ -287,3 +299,237 @@ public class Gun_test
     public float bulletPrecision;
     public GameObject bulletPrefab;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//using System.Collections;
+//using System.Collections.Generic;
+//using UnityEngine;
+
+//public class PlayerController_test : MonoBehaviour
+//{
+//    [Header("References")]
+//    [SerializeField] private CharacterController controller;
+//    [SerializeField] private Camera cam;
+//    [SerializeField] private GameObject capsuleCharacter;
+
+//    [Header("Horizontal movement")]
+//    [SerializeField] private float walkSpeed = 12f;
+//    [SerializeField] private float sprintSpeed = 24f;
+
+//    [Header("Vertical movement")]
+//    [SerializeField] private float gravity = -25f;
+//    [SerializeField] private float jumpForce = 15f;
+
+//    Vector3 verticalVelocity;
+
+//    [Header("Movement options")]
+//    [SerializeField] private bool canSprint = true;
+//    [SerializeField] private bool canJump = true;
+//    [SerializeField] private bool canCrouch = true;
+
+//    private KeyCode sprintKey = KeyCode.LeftShift;
+//    private KeyCode jumpKey = KeyCode.Space;
+
+//    public bool CanMove { get; private set; } = true;
+//    private bool IsSprinting => canSprint && Input.GetKey(sprintKey);
+//    private bool ShouldJump => Input.GetKeyDown(jumpKey) && controller.isGrounded;
+//    private bool ShouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && controller.isGrounded;
+
+//    [Header("Crouching parameters")]
+//    [SerializeField] private float crouchHeight = 0.5f;
+//    [SerializeField] private float standingHeight = 1.8f;
+//    [SerializeField] private float timeToCrouch = 0.25f;
+//    [SerializeField] private Vector3 crouchingCenter = new Vector3(0, 0.5f, 0);
+//    [SerializeField] private Vector3 standingCenter = Vector3.zero;
+//    private bool isCrouching = false;
+//    private bool duringCrouchAnimation = false;
+//    private KeyCode crouchKey = KeyCode.LeftControl;
+
+//    [Header("Weapons settings")]
+//    public Gun_test[] gunList;
+//    public GameObject[] gunObjets;
+//    public Transform gunPoint;
+//    float delaySinceFiring = 0f;
+
+//    [HideInInspector] public int currentGun;
+//    private int lastGun;
+//    private bool canShoot;
+
+//        public bool CanShoot
+//    {
+//        get { return canShoot; }
+//    }
+
+//    [SerializeField] private GameObject translocatorScreen;
+
+//    [Header("Weapon clipping prevention")]
+//    [SerializeField] private GameObject weapon;
+//    [SerializeField] private GameObject clipProjector;
+//    [SerializeField] private float checkDistance;
+//    [SerializeField] private Vector3 newDirection = new Vector3(0, -90, 0);
+
+//    private float shootDisableThreshold = 0.15f;
+//    private float lerpPosition;
+//    RaycastHit hit;
+
+//    private void Start()
+//    {
+//        canShoot = true;
+//    }
+
+//    void Update()
+//    {
+//        Debug.Log("controller.isGrounded = " + controller.isGrounded);
+//        if (CanMove)
+//        {
+//            HandleMovementInput();
+//            if (canJump) HandleJump();
+//            if (canCrouch) HandleCrouch();
+//        }
+
+//        PreventClip();
+
+//        delaySinceFiring += Time.deltaTime;
+//        if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
+//        {
+//            delaySinceFiring = 0f;
+//            StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed, gunList[currentGun].bulletDelay, gunList[currentGun].bulletPrecision));
+//        }
+
+//        lastGun = currentGun;
+//        if (Input.GetButtonDown("Gun0")) currentGun = 0;
+//        if (Input.GetButtonDown("Gun1")) currentGun = 1;
+//        if (Input.GetButtonDown("Gun2")) currentGun = 2;
+//        if (Input.GetButtonDown("Gun3")) currentGun = 3;
+//        if (lastGun != currentGun) SwitchGun(lastGun);
+//    }
+
+//    private void HandleMovementInput()
+//    {
+//        float x = Input.GetAxis("Horizontal");
+//        float z = Input.GetAxis("Vertical");
+//        float speed = IsSprinting ? sprintSpeed : walkSpeed;
+//        Vector3 move = transform.right * x + transform.forward * z;
+//        controller.Move(move * speed * Time.deltaTime);
+//        if (controller.isGrounded) verticalVelocity.y = 0f;
+//    }
+
+//    private void HandleJump()
+//    {
+//        if (ShouldJump)
+//        {
+//            verticalVelocity.y = jumpForce;
+//        }
+
+//        if (!controller.isGrounded && !duringCrouchAnimation) verticalVelocity.y += gravity * Time.deltaTime;
+//        controller.Move(verticalVelocity * Time.deltaTime);
+//    }
+
+//    private void HandleCrouch()
+//    {
+//        if (ShouldCrouch)
+//        {
+//            StartCoroutine(CrouchStand());
+//        }
+//    }
+
+//    private IEnumerator CrouchStand()
+//    {
+//        if (isCrouching && Physics.Raycast(cam.transform.position, Vector3.up, 1f))
+//            yield break;
+
+//        duringCrouchAnimation = true;
+
+//        float timeElapsed = 0f;
+//        float targetHeight = isCrouching ? standingHeight : crouchHeight;
+//        float currentHeight = controller.height;
+//        Vector3 targetCenter = isCrouching ? standingCenter : crouchingCenter;
+//        Vector3 currentCenter = controller.center;
+
+//        float currentCapsuleHeight = capsuleCharacter.transform.localScale.y;
+//        Vector3 currentCapsulePosition = capsuleCharacter.transform.localPosition;
+
+//        while (timeElapsed < timeToCrouch)
+//        {
+//            float newCapsuleHeight = Mathf.Lerp(currentCapsuleHeight, targetHeight / 2f, timeElapsed / timeToCrouch);
+//            capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, newCapsuleHeight, capsuleCharacter.transform.localScale.z);
+//            float newYPosition = Mathf.Lerp(currentCapsulePosition.y, 1f, timeElapsed / timeToCrouch);
+//            capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, newYPosition, capsuleCharacter.transform.localPosition.z);
+
+//            controller.height = Mathf.Lerp(currentHeight, targetHeight, timeElapsed / timeToCrouch);
+//            controller.center = Vector3.Lerp(currentCenter, targetCenter, timeElapsed / timeToCrouch);
+
+//            timeElapsed += Time.deltaTime;
+//            yield return null;
+//        }
+
+//        capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, targetHeight / 2f, capsuleCharacter.transform.localScale.z);
+//        capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, 1f, capsuleCharacter.transform.localPosition.z);
+
+//        controller.height = targetHeight;
+//        controller.center = targetCenter;
+
+//        isCrouching = !isCrouching;
+//        duringCrouchAnimation = false;
+//    }
+
+//    private void PreventClip()
+//    {
+//        if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance))
+//        {
+//            lerpPosition = 1 - (hit.distance / checkDistance);
+//        }
+//        else
+//        {
+//            lerpPosition = 0;
+//        }
+
+//        lerpPosition = Mathf.Clamp01(lerpPosition);
+//        weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
+//        canShoot = lerpPosition < shootDisableThreshold;
+//    }
+
+//    void SwitchGun(int lastGun)
+//    {
+//        gunObjets[lastGun].SetActive(false);
+//        gunObjets[currentGun].SetActive(true);
+//    }
+
+//    IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
+//    {
+//        for (int i = 0; i < amount; i++)
+//        {
+//            var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, cam.transform.rotation);
+
+//            if (currentGun == 2)
+//            {
+//                bulletObject.GetComponent<TeleporterBulletBehavior_test>().GetTranslocatorScreenReference(translocatorScreen);
+//                bulletObject.GetComponent<TeleporterBulletBehavior_test>().Shoot_TP_Bullet();
+//            }
+//            else
+//            {
+//                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + Random.insideUnitSphere * precision, ForceMode.Impulse);
+//            }
+
+//            yield return new WaitForSeconds(delay);
+//        }
+//    }
+//}
+
+//[System.Serializable]
+//public class Gun_test
+//{
+//    public string gunName;
+//    public int bulletAmount;
+//    public float bulletSpeed;
+//    public float bulletDelay;
+//    public float gunCooldown;
+//    public float bulletPrecision;
+//    public GameObject bulletPrefab;
+//}
+
