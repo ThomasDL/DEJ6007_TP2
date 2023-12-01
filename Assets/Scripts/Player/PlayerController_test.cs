@@ -23,7 +23,10 @@ public class PlayerController_test : MonoBehaviour
 
     [Header("Vertical movement")]
     [SerializeField] private float gravity = -30f;
-    [SerializeField] private float jumpForce = 12f;
+    [SerializeField] private float walkingJumpForce = 8f;
+    [SerializeField] private float sprintingJumpForce = 11f;
+    [SerializeField] private float crouchingJumpForce = 6f;
+    private float jumpForce;
 
     [Header("Coyote Time")]
     private float coyoteTimeDuration = 15f / 60f; // A coyote jump timeframe equivalent to 15 frames at 60 FPS
@@ -195,7 +198,7 @@ public class PlayerController_test : MonoBehaviour
 
     private void HandleJump()
     {
-        
+        jumpForce = isCrouching ? crouchingJumpForce : IsSprinting ? sprintingJumpForce : walkingJumpForce;
         if (isGrounded)
         {
             //Reset consumed coyote time and justJumped flag
@@ -205,6 +208,7 @@ public class PlayerController_test : MonoBehaviour
             //Perform regular jump when grounded
             if (ShouldJump)
             {
+                Debug.Log("jumpForce = " + jumpForce);
                 justJumped = true;
                 verticalVelocity.y = jumpForce;
             }
@@ -220,7 +224,7 @@ public class PlayerController_test : MonoBehaviour
             if (ShouldJump && canCoyoteJump && !justJumped)
             {
                 justJumped = true;
-                Debug.Log("JUMP using COYOTE TIME");
+                Debug.Log("JUMP using COYOTE TIME + jumpForce = " + jumpForce);
                 verticalVelocity.y = jumpForce;
             }
         }
@@ -230,7 +234,7 @@ public class PlayerController_test : MonoBehaviour
 
     private void HandleCrouch()
     {
-        //Player can exit crouching either by pressing crouchKey again or when player starts running
+        //Player can exit crouching either by pressing crouchKey again or when he starts running
         if ((!isCrouching && ShouldCrouch) || (isCrouching && (ShouldCrouch || startedSprinting)))
         {
             StartCoroutine(CrouchStand());

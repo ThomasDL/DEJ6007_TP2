@@ -4332,6 +4332,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: sprintSpeed
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: walkingJumpForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: crouchingJumpForce
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: sprintingJumpForce
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: groundCheckDistance
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 7598424566611139912, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: obstaclesParent
       value: 
