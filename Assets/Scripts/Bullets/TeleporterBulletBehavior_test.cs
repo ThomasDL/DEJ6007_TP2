@@ -73,7 +73,8 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
             translocatorBulletCamera.transform.rotation = Camera.main.transform.rotation;
         }
 
-        if (Input.GetButtonDown("Fire2"))
+        //if (Input.GetButtonDown("Fire2"))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             translocatorScreen.SetActive(false);
             Destroy(gameObject);

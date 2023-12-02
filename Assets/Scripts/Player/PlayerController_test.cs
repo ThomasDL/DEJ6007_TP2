@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class PlayerController_test : MonoBehaviour
 {
@@ -43,10 +44,12 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private bool canCrouch = true; // Enable crouch logic
     [SerializeField] private bool canUseHeadBob = true; // Enable Head bob logic
     [SerializeField] private bool willSlideOnSlopes = true; // Enable slopes logic
+    [SerializeField] private bool canZoom = true; // Enable zoom logic
 
-    // Sprint and Jump controls
+    // Controls
     private KeyCode sprintKey = KeyCode.LeftShift;
     private KeyCode jumpKey = KeyCode.Space;
+    private KeyCode zoomKey = KeyCode.Mouse1;
 
 
     // Properties to control movement + sprinting, jumping, and crouching
@@ -75,6 +78,28 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float crouchBobAmount = 0.025f;
     private float defaultYPos = 0;
     private float timer;
+
+    [Header("Zoom parameters")]
+    [SerializeField] private float timeToZoom = 0.3f;
+    [SerializeField] private float zoomFOV = 30f;
+    private float defaultFOV;
+    private Coroutine zoomRoutine;
+
+    //Slope sligind parameters
+    private Vector3 hitPointNormal;
+
+    private bool IsSliding
+    {
+        get
+        {
+            if (isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 1f))
+            {
+                hitPointNormal = slopeHit.normal;
+                return Vector3.Angle(hitPointNormal, Vector3.up) > controller.slopeLimit;
+            }
+            else return false;
+        }
+    }
 
     #endregion
 
@@ -146,14 +171,44 @@ public class PlayerController_test : MonoBehaviour
 
     #endregion
 
+
+    #region Health System
+
+    [Header("Health Parameters")]
+    [SerializeField] private float maxHealth = 100f;
+    [SerializeField] private float timeBeforeRegenStarts = 3f;
+    [SerializeField] private float healthValueIncrement = 1f;
+    [SerializeField] private float healthTimeIncrement = 0.1f;
+
+    private float currentHealth;
+    private Coroutine regeneratingHealth;
+
+    public static event Action<float> OnTakeDamage;
+    public static event Action<float> OnDamage;
+    public static event Action<float> OnHeal;
+
+    #endregion
+
     private void Awake()
     {
         defaultYPos = cam.transform.localPosition.y;
+        defaultFOV = cam.fieldOfView;
+        currentHealth = maxHealth; // Initialize current health to max at start
+    }
+
+    private void OnEnable()
+    {
+        OnTakeDamage += ApplyDamage;
+    }
+
+    private void OnDisable()
+    {
+        OnTakeDamage -= ApplyDamage;
     }
 
     private void Start()
     {
-        isGrounded = IsGrounded();
+        isGrounded = CheckIfGrounded();
         canShoot = true;
         crouchSpeed = walkSpeed * 0.35f;
     }
@@ -161,7 +216,7 @@ public class PlayerController_test : MonoBehaviour
     void Update()
     {
         // Groundcheck
-        isGrounded = IsGrounded();
+        isGrounded = CheckIfGrounded();
 
         if (CanMove)
         {
@@ -169,6 +224,7 @@ public class PlayerController_test : MonoBehaviour
             if (canJump) HandleJump();
             if (canCrouch) HandleCrouch();
             if (canUseHeadBob) HandleHeadBob();
+            if (canZoom) HandleZoom();
         }
 
         PreventClip();
@@ -185,15 +241,23 @@ public class PlayerController_test : MonoBehaviour
         float z = Input.GetAxis("Vertical");
 
         startedSprinting = Input.GetKeyDown(sprintKey);
-
-        moveDirection = transform.right * x + transform.forward * z;
-        controller.Move(moveSpeed * Time.deltaTime * moveDirection);
-
+        
         if (isGrounded)
         {
             moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
             verticalVelocity.y = 0f;
         }
+
+        if (willSlideOnSlopes && IsSliding)
+        {
+            moveDirection += new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
+        }
+        else
+        {
+            moveDirection = transform.right * x + transform.forward * z;
+        }
+
+        controller.Move(moveSpeed * Time.deltaTime * moveDirection);
     }
 
     private void HandleJump()
@@ -208,7 +272,7 @@ public class PlayerController_test : MonoBehaviour
             //Perform regular jump when grounded
             if (ShouldJump)
             {
-                Debug.Log("jumpForce = " + jumpForce);
+                //Debug.Log("jumpForce = " + jumpForce);
                 justJumped = true;
                 verticalVelocity.y = jumpForce;
             }
@@ -224,7 +288,7 @@ public class PlayerController_test : MonoBehaviour
             if (ShouldJump && canCoyoteJump && !justJumped)
             {
                 justJumped = true;
-                Debug.Log("JUMP using COYOTE TIME + jumpForce = " + jumpForce);
+                //Debug.Log("JUMP using COYOTE TIME + jumpForce = " + jumpForce);
                 verticalVelocity.y = jumpForce;
             }
         }
@@ -312,7 +376,96 @@ public class PlayerController_test : MonoBehaviour
         }
     }
 
+    private void HandleZoom()
+    {
+        if (Input.GetKeyDown(zoomKey))
+        {
+            if (zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
 
+            zoomRoutine = StartCoroutine(ToggleZoom(true));
+        }
+
+        if (Input.GetKeyUp(zoomKey))
+        {
+            if (zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
+
+            zoomRoutine = StartCoroutine(ToggleZoom(false));
+        }
+    }
+
+    private IEnumerator ToggleZoom(bool isEnter)
+    {
+        float targetFOV = isEnter ? zoomFOV : defaultFOV;
+        float startingFOV = cam.fieldOfView;
+        float timeElapsed = 0;
+
+        while(timeElapsed < timeToZoom)
+        {
+            cam.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        cam.fieldOfView = targetFOV;
+        zoomRoutine = null;
+    }
+
+    #region Health System Methods
+
+    private void ApplyDamage(float damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            KillPlayer();
+        }
+        else if (regeneratingHealth != null)
+        {
+            StopCoroutine(regeneratingHealth);
+        }
+
+        regeneratingHealth = StartCoroutine(RegenerateHealth());
+
+        OnDamage?.Invoke(currentHealth);
+    }
+
+    private void KillPlayer()
+    {
+        currentHealth = 0;
+        if (regeneratingHealth != null)
+        {
+            StopCoroutine(regeneratingHealth);
+        }
+        // Implement what happens when the player dies
+        DisableMovement();
+        Debug.Log("Dead");
+    }
+
+    private IEnumerator RegenerateHealth()
+    {
+        yield return new WaitForSeconds(timeBeforeRegenStarts);
+        WaitForSeconds timeToWait = new WaitForSeconds(healthTimeIncrement);
+
+        while (currentHealth < maxHealth)
+        {
+            currentHealth += healthValueIncrement;
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+            OnHeal?.Invoke(currentHealth);
+            yield return timeToWait;
+        }
+
+        regeneratingHealth = null;
+    }
+
+    #endregion
 
     private void HandleGunSwitch()
     {
@@ -335,6 +488,15 @@ public class PlayerController_test : MonoBehaviour
         }
     }
 
+    private void DisableMovement()
+    {
+        CanMove = false;
+        canJump = false;
+        canCrouch = false;
+        canZoom = false;
+        canSprint = false;
+    }
+
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.magenta;
@@ -348,7 +510,7 @@ public class PlayerController_test : MonoBehaviour
         gunObjets[currentGun].SetActive(true);
     }
 
-    bool IsGrounded()
+    bool CheckIfGrounded()
     {
         bool grounded = Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
         if (grounded)
@@ -377,7 +539,7 @@ public class PlayerController_test : MonoBehaviour
             }
             else
             {
-                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + Random.insideUnitSphere * precision, ForceMode.Impulse);
+                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + UnityEngine.Random.insideUnitSphere * precision, ForceMode.Impulse);
             }
 
             yield return new WaitForSeconds(delay);
