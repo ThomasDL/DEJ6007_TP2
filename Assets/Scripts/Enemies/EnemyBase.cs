@@ -19,7 +19,11 @@ public abstract class EnemyBase : MonoBehaviour
     public float visionDistance;
     protected float proximity = 12f;
 
-    protected float timeSinceLastAttack;
+    protected float timeSincePlayerWasSeen = 5f;
+    protected const float timeBeforePlayerIsForgotten = 3f;
+
+    protected Vector3 previousPosition;
+    protected Vector3 currentPosition;
 
     protected void Awake()
     {
@@ -30,7 +34,7 @@ public abstract class EnemyBase : MonoBehaviour
     }
     protected void Update()
     {
-        timeSinceLastAttack += Time.deltaTime;
+        timeSincePlayerWasSeen += Time.deltaTime;
         if (enemyState == EnemyState.Patrolling)
         {
             if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)
@@ -43,14 +47,16 @@ public abstract class EnemyBase : MonoBehaviour
     protected bool CheckIfPlayerIsInSight()
     {
         if (Mathf.Abs(Vector3.Angle(visionPoint.forward, player.transform.position - visionPoint.transform.position)) > 80
-            && Vector3.Distance(player.transform.position, visionPoint.transform.position) > proximity) return false;
+            && timeSincePlayerWasSeen > timeBeforePlayerIsForgotten) return false;
         else
         {
             if (Physics.Raycast(visionPoint.position, player.transform.position - visionPoint.transform.position, visionDistance, LayerMask.GetMask("Player"))
                 && !Physics.Raycast(visionPoint.position, player.transform.position - visionPoint.transform.position, Vector3.Distance(player.transform.position, visionPoint.transform.position), LayerMask.GetMask("Ground")))
             {
+                timeSincePlayerWasSeen = 0;
                 return true;
             }
+            else if (timeSincePlayerWasSeen < timeBeforePlayerIsForgotten) return true;
             else return false;
         }
     }
