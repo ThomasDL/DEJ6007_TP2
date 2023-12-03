@@ -6,7 +6,7 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
 {
     private CharacterController _characterController_Unity;
 
-    [SerializeField] private GameObject translocatorScreen;
+    private GameObject translocatorScreen;
     [SerializeField] private Camera translocatorBulletCamera;
 
     [SerializeField] private bool useAsGhost;
@@ -62,7 +62,6 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     public void Shoot_TP_Bullet()
     {
         this._bullet_rb.AddForce(this.gameObject.transform.forward * _bulletSpeed, ForceMode.Impulse);
-        translocatorScreen.SetActive(true);
     }
 
     private void TranslocatePlayer()
@@ -71,6 +70,7 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
         {
             CheckCollisionWithFloor = true;
             translocatorBulletCamera.transform.rotation = Camera.main.transform.rotation;
+            translocatorScreen.SetActive(true);
         }
 
         //if (Input.GetButtonDown("Fire2"))

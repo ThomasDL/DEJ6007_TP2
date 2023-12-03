@@ -12,15 +12,19 @@ public class TeleporterGun_TrajectoryLine : MonoBehaviour
 
     private PlayerController_test _playerController;
 
+    private Vector3 gameGravity;
+
     void Awake()
     {
-        lineRenderer = GetComponent<LineRenderer>();
+        //lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer = GetComponentInChildren<LineRenderer>();
     }
 
     private void Start()
     {
         lineRenderer.enabled = false;
         _playerController = GameObject.Find("Player_test_achraf").GetComponent<PlayerController_test>();
+        gameGravity = new Vector3(0, -10f, 0);
     }
 
     void Update()
@@ -48,7 +52,8 @@ public class TeleporterGun_TrajectoryLine : MonoBehaviour
         for (int i = 0; i < resolution; i++)
         {
             float time = i * 0.1f;
-            points[i] = startingPoint + startingVelocity * time + Physics.gravity * time * time / 2f;
+            //points[i] = startingPoint + startingVelocity * time + Physics.gravity * time * time / 2f;
+            points[i] = startingPoint + startingVelocity * time + gameGravity * (time * time) / 2f;
             if (points[i].y < 0)
             {
                 lineRenderer.positionCount = i + 1;

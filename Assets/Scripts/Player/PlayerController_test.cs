@@ -10,6 +10,7 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private Camera cam;
     [SerializeField] private Transform groundChecker;
     [SerializeField] private GameObject capsuleCharacter;
+    [SerializeField] private GameObject trajectoryLine;
 
     #region Movement
 
@@ -59,6 +60,7 @@ public class PlayerController_test : MonoBehaviour
     private bool ShouldJump => Input.GetKeyDown(jumpKey);
     private bool ShouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && isGrounded;
 
+
     [Header("Crouching parameters")]
     [SerializeField] private float crouchHeight = 0.5f;
     [SerializeField] private float standingHeight = 1.8f;
@@ -66,6 +68,11 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private Vector3 crouchingCenter = new Vector3(0, 0.5f, 0);
     [SerializeField] private Vector3 standingCenter = Vector3.zero;
     private bool isCrouching = false;
+    public bool IsCrouching
+    {
+        get { return isCrouching; }
+    }
+
     private bool duringCrouchAnimation = false;
     private KeyCode crouchKey = KeyCode.LeftControl; // Key for crouching
 
@@ -85,7 +92,7 @@ public class PlayerController_test : MonoBehaviour
     private float defaultFOV;
     private Coroutine zoomRoutine;
 
-    //Slope sligind parameters
+    // Slope sligind parameters
     private Vector3 hitPointNormal;
 
     private bool IsSliding
@@ -122,7 +129,7 @@ public class PlayerController_test : MonoBehaviour
         get { return canShoot; }
     }
 
-    //Easier reference spot for the translocator screen for now
+    // Easier reference spot for the translocator screen for now
     [SerializeField] private GameObject translocatorScreen;
 
     #endregion
@@ -176,21 +183,40 @@ public class PlayerController_test : MonoBehaviour
 
     [Header("Health Parameters")]
     [SerializeField] private float maxHealth = 100f;
+
     [SerializeField] private float timeBeforeRegenStarts = 3f;
     [SerializeField] private float healthValueIncrement = 1f;
     [SerializeField] private float healthTimeIncrement = 0.1f;
 
     private float currentHealth;
+
+    // We regenerate health with the coroutine that we cache further down in the script into this variable
+    // Regen works like classic modern FPS : small increments after not receiving damage for a while
     private Coroutine regeneratingHealth;
 
-    public static event Action<float> OnTakeDamage;
-    public static event Action<float> OnDamage;
-    public static event Action<float> OnHeal;
+    public static Action<float> OnTakeDamage;
+    public static Action<float> OnDamage;
+    public static Action<float> OnHeal;
 
     #endregion
 
+    // Player is a Singleton = easier access to the player instance
+    // directly via this static property instead of GameObject.Find()
+    // From other script, use : "player = PlayerController.Instance.gameObject;"
+    public static PlayerController_test Instance { get; private set; }
+    // Alternative : GameObject.FindWithTag("Player") is more efficient than GameObject.Find("Player").
+
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
         defaultYPos = cam.transform.localPosition.y;
         defaultFOV = cam.fieldOfView;
         currentHealth = maxHealth; // Initialize current health to max at start
@@ -211,6 +237,8 @@ public class PlayerController_test : MonoBehaviour
         isGrounded = CheckIfGrounded();
         canShoot = true;
         crouchSpeed = walkSpeed * 0.35f;
+        trajectoryLine.SetActive(false);
+        UI_Manager.OnCrouch(isCrouching);
     }
 
     void Update()
@@ -234,6 +262,7 @@ public class PlayerController_test : MonoBehaviour
         HandleGunSwitch();
     }
 
+    #region Movement methods
     private void HandleMovementInput()
     {
         // Ground movement code
@@ -241,7 +270,7 @@ public class PlayerController_test : MonoBehaviour
         float z = Input.GetAxis("Vertical");
 
         startedSprinting = Input.GetKeyDown(sprintKey);
-        
+
         if (isGrounded)
         {
             moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
@@ -265,11 +294,11 @@ public class PlayerController_test : MonoBehaviour
         jumpForce = isCrouching ? crouchingJumpForce : IsSprinting ? sprintingJumpForce : walkingJumpForce;
         if (isGrounded)
         {
-            //Reset consumed coyote time and justJumped flag
+            // Reset consumed coyote time and justJumped flag
             timeSinceUngrounded = 0f;
             if (justJumped == true) justJumped = false;
-            
-            //Perform regular jump when grounded
+
+            // Perform regular jump when grounded
             if (ShouldJump)
             {
                 //Debug.Log("jumpForce = " + jumpForce);
@@ -284,7 +313,7 @@ public class PlayerController_test : MonoBehaviour
             timeSinceUngrounded += Time.deltaTime;
             bool canCoyoteJump = (timeSinceUngrounded <= coyoteTimeDuration) && (justJumped == false);
 
-            //Perform jump using coyote time
+            // Perform jump using coyote time
             if (ShouldJump && canCoyoteJump && !justJumped)
             {
                 justJumped = true;
@@ -298,7 +327,7 @@ public class PlayerController_test : MonoBehaviour
 
     private void HandleCrouch()
     {
-        //Player can exit crouching either by pressing crouchKey again or when he starts running
+        // Player can exit crouching either by pressing crouchKey again or when he starts running
         if ((!isCrouching && ShouldCrouch) || (isCrouching && (ShouldCrouch || startedSprinting)))
         {
             StartCoroutine(CrouchStand());
@@ -307,7 +336,7 @@ public class PlayerController_test : MonoBehaviour
 
     private IEnumerator CrouchStand()
     {
-        if (isCrouching && Physics.Raycast(cam.transform.position, Vector3.up, 1f))
+        if (isCrouching && Physics.Raycast(cam.transform.position, Vector3.up, 2f))
             yield break;
 
         duringCrouchAnimation = true;
@@ -359,6 +388,7 @@ public class PlayerController_test : MonoBehaviour
         transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount, transform.position.z);
 
         isCrouching = !isCrouching;
+        UI_Manager.OnCrouch(isCrouching);
         duringCrouchAnimation = false;
     }
 
@@ -376,6 +406,31 @@ public class PlayerController_test : MonoBehaviour
         }
     }
 
+    private void DisableMovement()
+    {
+        CanMove = false;
+        canJump = false;
+        canCrouch = false;
+        canZoom = false;
+        canSprint = false;
+    }
+
+    bool CheckIfGrounded()
+    {
+        bool grounded = Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
+        if (grounded)
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.red);
+        }
+        else
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.blue);
+        }
+        return grounded;
+    }
+    #endregion
+
+    #region Zoom Methods
     private void HandleZoom()
     {
         if (Input.GetKeyDown(zoomKey))
@@ -407,7 +462,7 @@ public class PlayerController_test : MonoBehaviour
         float startingFOV = cam.fieldOfView;
         float timeElapsed = 0;
 
-        while(timeElapsed < timeToZoom)
+        while (timeElapsed < timeToZoom)
         {
             cam.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
             timeElapsed += Time.deltaTime;
@@ -416,12 +471,17 @@ public class PlayerController_test : MonoBehaviour
         cam.fieldOfView = targetFOV;
         zoomRoutine = null;
     }
+    #endregion
 
     #region Health System Methods
 
     private void ApplyDamage(float damage)
     {
         currentHealth -= damage;
+
+        // (if not null "?") Invokes this event to notify other systems
+        // (like UI) that are subscribed to this event of the health change.
+        OnDamage?.Invoke(currentHealth);
 
         if (currentHealth <= 0)
         {
@@ -432,41 +492,68 @@ public class PlayerController_test : MonoBehaviour
             StopCoroutine(regeneratingHealth);
         }
 
+        // Starts the health regeneration coroutine.
         regeneratingHealth = StartCoroutine(RegenerateHealth());
-
-        OnDamage?.Invoke(currentHealth);
     }
 
     private void KillPlayer()
     {
         currentHealth = 0;
+        OnDamage?.Invoke(currentHealth);
+
+        // Stops health regen if the player is dead.
         if (regeneratingHealth != null)
         {
             StopCoroutine(regeneratingHealth);
         }
         // Implement what happens when the player dies
+
+        // Display death screen with replay button.
         DisableMovement();
         Debug.Log("Dead");
     }
 
+    // Coroutine that gradually restores the player's health over time after a delay.
     private IEnumerator RegenerateHealth()
     {
+        // Frame 1: Starts the coroutine.
+        // Waits for 'timeBeforeRegenStarts' seconds before executing the next line.
+        // This is a pause, not a block; other game operations continue.
         yield return new WaitForSeconds(timeBeforeRegenStarts);
+
+        // Frame after delay: The wait is over.
+        // Sets up another wait time for health increment.
         WaitForSeconds timeToWait = new WaitForSeconds(healthTimeIncrement);
 
+        // Enters a loop, executed once per frame.
         while (currentHealth < maxHealth)
         {
+            // Increases the player's health by 'healthValueIncrement'.
             currentHealth += healthValueIncrement;
+
+            // Ensures health does not exceed the maximum limit.
             currentHealth = Mathf.Min(currentHealth, maxHealth);
+
+            // (if not null "?") Invokes this event to update
+            // any listeners (like UI) about the health change.
             OnHeal?.Invoke(currentHealth);
+
+            // Waits for 'healthTimeIncrement' seconds before next loop iteration.
+            // Again, this wait is non-blocking.
             yield return timeToWait;
         }
 
+        // Once the loop is complete (health is fully regenerated), this line is reached.
+        // Resets the coroutine reference, indicating that regeneration is complete.
         regeneratingHealth = null;
     }
-
+    public float GetMaxHealth()
+    {
+        return maxHealth;
+    }
     #endregion
 
+    #region Shooting methods
     private void HandleGunSwitch()
     {
         lastGun = currentGun;
@@ -488,49 +575,31 @@ public class PlayerController_test : MonoBehaviour
         }
     }
 
-    private void DisableMovement()
-    {
-        CanMove = false;
-        canJump = false;
-        canCrouch = false;
-        canZoom = false;
-        canSprint = false;
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.magenta;
-        //Gizmos.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z));
-        Gizmos.DrawWireSphere(groundChecker.position, groundCheckDistance);
-    }
-
     void SwitchGun(int lastGun)
     {
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
-    }
 
-    bool CheckIfGrounded()
-    {
-        bool grounded = Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
-        if (grounded)
-        {
-            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.red);
-        }
-        else
-        {
-            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.blue);
-        }
-        return grounded;
+        if (currentGun == 2) trajectoryLine.SetActive(true);
+        else trajectoryLine.SetActive(false);
     }
+    #endregion
 
+    // !!!!!!
+    // Rework needed here to make bullets a general (abstract or interface ?) class
+    // with each bullet type inherinting from it and then overloading a Shoot() method
+    // that handles the behavior of the bullet differently. BulletSpeed goes there too.
+    //
+    // Gun class should only handle gun behavior such as firing rate, ammo,
+    // number of bullet to instantiate, etc.
+    // !!!!!!
     IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
     {
         for (int i = 0; i < amount; i++)
         {
             var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, cam.transform.rotation);
 
-            //Special behavior for Teleporter Gun
+            // Special behavior for Teleporter Gun
             if (currentGun == 2)
             {
                 Debug.Log("Shooting TP Bullet");
@@ -545,6 +614,15 @@ public class PlayerController_test : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
     }
+
+    #region Helper / debug functions
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.magenta;
+        //Gizmos.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z));
+        Gizmos.DrawWireSphere(groundChecker.position, groundCheckDistance);
+    }
+    #endregion
 }
 
 [System.Serializable]
