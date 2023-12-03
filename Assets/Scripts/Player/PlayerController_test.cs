@@ -1,118 +1,628 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class PlayerController_test : MonoBehaviour
 {
-    public CharacterController controller;
-    public Camera cam;
+    [Header("References")]
+    [SerializeField] private CharacterController controller;
+    [SerializeField] private Camera cam;
+    [SerializeField] private Transform groundChecker;
+    [SerializeField] private GameObject capsuleCharacter;
+    [SerializeField] private GameObject trajectoryLine;
 
+    #region Movement
+
+    [Header("Horizontal movement")]
+    [SerializeField] private float walkSpeed = 8f;
+    [SerializeField] private float sprintSpeed = 14f;
+    [SerializeField] private float slopeSpeed = 16f;
+    private float crouchSpeed; // will be assigned in start as a % of walkspeed
+    private Vector3 moveDirection;
+    private float moveSpeed;
+    private bool startedSprinting = false;
+
+    [Header("Vertical movement")]
+    [SerializeField] private float gravity = -30f;
+    [SerializeField] private float walkingJumpForce = 8f;
+    [SerializeField] private float sprintingJumpForce = 11f;
+    [SerializeField] private float crouchingJumpForce = 6f;
+    private float jumpForce;
+
+    [Header("Coyote Time")]
+    private float coyoteTimeDuration = 15f / 60f; // A coyote jump timeframe equivalent to 15 frames at 60 FPS
+    private float timeSinceUngrounded = 0f;
+    private bool justJumped = false;
+
+    Vector3 verticalVelocity;
+    [SerializeField] private float groundCheckDistance = 0.25f;
+    private bool isGrounded;
+
+    [Header("Modular movement options")]
+    [SerializeField] private bool canSprint = true; // Enable sprint logic
+    [SerializeField] private bool canJump = true; // Enable jump logic
+    [SerializeField] private bool canCrouch = true; // Enable crouch logic
+    [SerializeField] private bool canUseHeadBob = true; // Enable Head bob logic
+    [SerializeField] private bool willSlideOnSlopes = true; // Enable slopes logic
+    [SerializeField] private bool canZoom = true; // Enable zoom logic
+
+    // Controls
+    private KeyCode sprintKey = KeyCode.LeftShift;
+    private KeyCode jumpKey = KeyCode.Space;
+    private KeyCode zoomKey = KeyCode.Mouse1;
+
+
+    // Properties to control movement + sprinting, jumping, and crouching
+    public bool CanMove { get; private set; } = true;
+    private bool IsSprinting => canSprint && Input.GetKey(sprintKey);
+    //private bool ShouldJump => Input.GetKeyDown(jumpKey) && isGrounded;
+    private bool ShouldJump => Input.GetKeyDown(jumpKey);
+    private bool ShouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && isGrounded;
+
+
+    [Header("Crouching parameters")]
+    [SerializeField] private float crouchHeight = 0.5f;
+    [SerializeField] private float standingHeight = 1.8f;
+    [SerializeField] private float timeToCrouch = 0.25f;
+    [SerializeField] private Vector3 crouchingCenter = new Vector3(0, 0.5f, 0);
+    [SerializeField] private Vector3 standingCenter = Vector3.zero;
+    private bool isCrouching = false;
+    public bool IsCrouching
+    {
+        get { return isCrouching; }
+    }
+
+    private bool duringCrouchAnimation = false;
+    private KeyCode crouchKey = KeyCode.LeftControl; // Key for crouching
+
+    [Header("HeadBob parameters")]
+    [SerializeField] private float walkBobSpeed = 14f;
+    [SerializeField] private float walkBobAmount = 0.05f;
+    [SerializeField] private float sprintBobSpeed = 18f;
+    [SerializeField] private float sprintBobAmount = 0.1f;
+    [SerializeField] private float crouchBobSpeed = 8f;
+    [SerializeField] private float crouchBobAmount = 0.025f;
+    private float defaultYPos = 0;
+    private float timer;
+
+    [Header("Zoom parameters")]
+    [SerializeField] private float timeToZoom = 0.3f;
+    [SerializeField] private float zoomFOV = 30f;
+    private float defaultFOV;
+    private Coroutine zoomRoutine;
+
+    // Slope sligind parameters
+    private Vector3 hitPointNormal;
+
+    private bool IsSliding
+    {
+        get
+        {
+            if (isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 1f))
+            {
+                hitPointNormal = slopeHit.normal;
+                return Vector3.Angle(hitPointNormal, Vector3.up) > controller.slopeLimit;
+            }
+            else return false;
+        }
+    }
+
+    #endregion
+
+
+    #region Weapons
+
+    [Header("Weapons parameters")]
     public Gun_test[] gunList;
     public GameObject[] gunObjets;
     public Transform gunPoint;
     float delaySinceFiring = 0f;
+
     [HideInInspector] public int currentGun;
+    private int lastGun;
 
-    public Transform groundChecker;
-    float groundCheckDistance = 0.58f;
+    private bool canShoot;
 
-    float speed = 12f;
-    float gravity = -25f;
-    float jumpForce = 15f;
+    public bool CanShoot
+    {
+        get { return canShoot; }
+    }
 
-    bool isGrounded;
+    // Easier reference spot for the translocator screen for now
+    [SerializeField] private GameObject translocatorScreen;
 
-    int lastGun;
+    #endregion
 
-    Vector3 verticalVelocity;
+    #region ClippingPrevention
 
-    [SerializeField] private ProjectileTrajectorySimulator _projection;
+    [Header("Weapon clipping prevention")]
+    [SerializeField] private GameObject weapon;
+    [SerializeField] private GameObject clipProjector;
+    [SerializeField] private float checkDistance;
+
+    [Tooltip("Layers to be ignored when preventing clipping")]
+    [SerializeField] private LayerMask ignoredLayers;
+
+    [Tooltip("Set the rotation to prevent clipping. Default is (0, -90, 0)")]
+    [SerializeField] private Vector3 newDirection = new Vector3(0, -90, 0);
+
+    // Threshold compared to weapon rotation when near an obstacle
+    private float shootDisableThreshold = 0.15f;
+
+    private float lerpPosition;
+    RaycastHit hit;
+
+    private void PreventClip()
+    {
+        // Define a layer mask that ignores the Player and Gun layers
+        int layerMaskToIgnore = ~ignoredLayers; // Invert the mask to ignore these layers
+
+        if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
+        {
+            //Get percentage from 0 to max distance
+            lerpPosition = 1 - (hit.distance / checkDistance);
+        }
+        else
+        {
+            //if we are not hitting anything, set to 0
+            lerpPosition = 0;
+        }
+
+        lerpPosition = Mathf.Clamp01(lerpPosition);
+        weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
+
+        // Disable shooting if the weapon is rotated significantly
+        canShoot = lerpPosition < shootDisableThreshold;
+    }
+
+    #endregion
+
+
+    #region Health System
+
+    [Header("Health Parameters")]
+    [SerializeField] private float maxHealth = 100f;
+
+    [SerializeField] private float timeBeforeRegenStarts = 3f;
+    [SerializeField] private float healthValueIncrement = 1f;
+    [SerializeField] private float healthTimeIncrement = 0.1f;
+
+    private float currentHealth;
+
+    // We regenerate health with the coroutine that we cache further down in the script into this variable
+    // Regen works like classic modern FPS : small increments after not receiving damage for a while
+    private Coroutine regeneratingHealth;
+
+    public static Action<float> OnTakeDamage;
+    public static Action<float> OnDamage;
+    public static Action<float> OnHeal;
+
+    #endregion
+
+    // Player is a Singleton = easier access to the player instance
+    // directly via this static property instead of GameObject.Find()
+    // From other script, use : "player = PlayerController.Instance.gameObject;"
+    public static PlayerController_test Instance { get; private set; }
+    // Alternative : GameObject.FindWithTag("Player") is more efficient than GameObject.Find("Player").
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+        defaultYPos = cam.transform.localPosition.y;
+        defaultFOV = cam.fieldOfView;
+        currentHealth = maxHealth; // Initialize current health to max at start
+    }
+
+    private void OnEnable()
+    {
+        OnTakeDamage += ApplyDamage;
+    }
+
+    private void OnDisable()
+    {
+        OnTakeDamage -= ApplyDamage;
+    }
 
     private void Start()
     {
-        isGrounded = IsGrounded();
-        _projection = _projection.gameObject.GetComponent<ProjectileTrajectorySimulator>();
+        isGrounded = CheckIfGrounded();
+        canShoot = true;
+        crouchSpeed = walkSpeed * 0.35f;
+        trajectoryLine.SetActive(false);
+        UI_Manager.OnCrouch(isCrouching);
     }
 
     void Update()
+    {
+        // Groundcheck
+        isGrounded = CheckIfGrounded();
+
+        if (CanMove)
+        {
+            HandleMovementInput();
+            if (canJump) HandleJump();
+            if (canCrouch) HandleCrouch();
+            if (canUseHeadBob) HandleHeadBob();
+            if (canZoom) HandleZoom();
+        }
+
+        PreventClip();
+
+        HandleFiring();
+
+        HandleGunSwitch();
+    }
+
+    #region Movement methods
+    private void HandleMovementInput()
     {
         // Ground movement code
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        Vector3 move = transform.right * x + transform.forward * z;
-        //if (move != Vector3.zero) _projection.ResetTrajectorySimulation();
-        controller.Move(move * speed * Time.deltaTime);
+        startedSprinting = Input.GetKeyDown(sprintKey);
 
-        // Groundcheck + jump code
-        isGrounded = IsGrounded();
-        if (isGrounded) verticalVelocity.y = 0f;
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (isGrounded)
         {
-            verticalVelocity.y = jumpForce;
+            moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
+            verticalVelocity.y = 0f;
         }
 
-        verticalVelocity.y += gravity * Time.deltaTime;
+        if (willSlideOnSlopes && IsSliding)
+        {
+            moveDirection += new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
+        }
+        else
+        {
+            moveDirection = transform.right * x + transform.forward * z;
+        }
+
+        controller.Move(moveSpeed * Time.deltaTime * moveDirection);
+    }
+
+    private void HandleJump()
+    {
+        jumpForce = isCrouching ? crouchingJumpForce : IsSprinting ? sprintingJumpForce : walkingJumpForce;
+        if (isGrounded)
+        {
+            // Reset consumed coyote time and justJumped flag
+            timeSinceUngrounded = 0f;
+            if (justJumped == true) justJumped = false;
+
+            // Perform regular jump when grounded
+            if (ShouldJump)
+            {
+                //Debug.Log("jumpForce = " + jumpForce);
+                justJumped = true;
+                verticalVelocity.y = jumpForce;
+            }
+        }
+        else // Apply gravity and update coyote time and justJumped flag
+        {
+            verticalVelocity.y += gravity * Time.deltaTime;
+
+            timeSinceUngrounded += Time.deltaTime;
+            bool canCoyoteJump = (timeSinceUngrounded <= coyoteTimeDuration) && (justJumped == false);
+
+            // Perform jump using coyote time
+            if (ShouldJump && canCoyoteJump && !justJumped)
+            {
+                justJumped = true;
+                //Debug.Log("JUMP using COYOTE TIME + jumpForce = " + jumpForce);
+                verticalVelocity.y = jumpForce;
+            }
+        }
+
         controller.Move(verticalVelocity * Time.deltaTime);
+    }
 
-        // Shooting code
-        delaySinceFiring += Time.deltaTime;
-        if (Input.GetButtonDown("Fire1") && delaySinceFiring > gunList[currentGun].gunCooldown)
+    private void HandleCrouch()
+    {
+        // Player can exit crouching either by pressing crouchKey again or when he starts running
+        if ((!isCrouching && ShouldCrouch) || (isCrouching && (ShouldCrouch || startedSprinting)))
         {
-            delaySinceFiring = 0f;
-            StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed, gunList[currentGun].bulletDelay, gunList[currentGun].bulletPrecision));
+            StartCoroutine(CrouchStand());
+        }
+    }
+
+    private IEnumerator CrouchStand()
+    {
+        if (isCrouching && Physics.Raycast(cam.transform.position, Vector3.up, 2f))
+            yield break;
+
+        duringCrouchAnimation = true;
+
+        float timeElapsed = 0f;
+        float targetHeight = isCrouching ? standingHeight : crouchHeight;
+        float targetCapsuleYPositon = isCrouching ? 0f : 1f;
+        float currentHeight = controller.height;
+        Vector3 targetCenter = isCrouching ? standingCenter : crouchingCenter;
+        Vector3 currentCenter = controller.center;
+
+        float currentCapsuleHeight = capsuleCharacter.transform.localScale.y;
+        Vector3 currentCapsulePosition = capsuleCharacter.transform.localPosition;
+
+        // Define a small lift amount when standing up
+        float initialPlayerYPosition = transform.position.y;
+        //float liftAmount = isCrouching ? 1.93f : 0f; // Lift player slightly when standing up
+        float liftAmount = isCrouching ? standingHeight * 0.55f : 0f; // Lift player slightly when standing up
+
+        //Scripted animation sequence for the crouching state
+        while (timeElapsed < timeToCrouch)
+        {
+            //Adjusting the capsule to match the CharacterController collider new values
+            float newCapsuleHeight = Mathf.Lerp(currentCapsuleHeight, targetHeight / 2f, timeElapsed / timeToCrouch);
+            capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, newCapsuleHeight, capsuleCharacter.transform.localScale.z);
+
+            float newYPosition = Mathf.Lerp(currentCapsulePosition.y, targetCapsuleYPositon, timeElapsed / timeToCrouch);
+            capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, newYPosition, capsuleCharacter.transform.localPosition.z);
+
+            //Gradually assigning new values for the CharacterController collider
+            controller.height = Mathf.Lerp(currentHeight, targetHeight, timeElapsed / timeToCrouch);
+            controller.center = Vector3.Lerp(currentCenter, targetCenter, timeElapsed / timeToCrouch);
+
+            // Gradually lift the player when standing up
+            if (isCrouching)
+            {
+                transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount * (timeElapsed / timeToCrouch), transform.position.z);
+            }
+
+            timeElapsed += Time.deltaTime;
+            yield return null;
         }
 
-        // Gun switching code
+        capsuleCharacter.transform.localScale = new Vector3(capsuleCharacter.transform.localScale.x, targetHeight / 2f, capsuleCharacter.transform.localScale.z);
+        capsuleCharacter.transform.localPosition = new Vector3(capsuleCharacter.transform.localPosition.x, targetCapsuleYPositon, capsuleCharacter.transform.localPosition.z);
+
+        controller.height = targetHeight;
+        controller.center = targetCenter;
+        transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount, transform.position.z);
+
+        isCrouching = !isCrouching;
+        UI_Manager.OnCrouch(isCrouching);
+        duringCrouchAnimation = false;
+    }
+
+    private void HandleHeadBob()
+    {
+        if (!isGrounded) return;
+
+        if (Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f)
+        {
+            timer += Time.deltaTime * (isCrouching ? crouchBobSpeed : IsSprinting ? sprintBobSpeed : walkBobSpeed);
+            cam.transform.localPosition = new Vector3(
+                cam.transform.localPosition.x,
+                defaultYPos + Mathf.Sin(timer) * (isCrouching ? crouchBobAmount : IsSprinting ? sprintBobAmount : walkBobAmount),
+                cam.transform.localPosition.z);
+        }
+    }
+
+    private void DisableMovement()
+    {
+        CanMove = false;
+        canJump = false;
+        canCrouch = false;
+        canZoom = false;
+        canSprint = false;
+    }
+
+    bool CheckIfGrounded()
+    {
+        bool grounded = Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
+        if (grounded)
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.red);
+        }
+        else
+        {
+            Debug.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z), Color.blue);
+        }
+        return grounded;
+    }
+    #endregion
+
+    #region Zoom Methods
+    private void HandleZoom()
+    {
+        if (Input.GetKeyDown(zoomKey))
+        {
+            if (zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
+
+            zoomRoutine = StartCoroutine(ToggleZoom(true));
+        }
+
+        if (Input.GetKeyUp(zoomKey))
+        {
+            if (zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
+
+            zoomRoutine = StartCoroutine(ToggleZoom(false));
+        }
+    }
+
+    private IEnumerator ToggleZoom(bool isEnter)
+    {
+        float targetFOV = isEnter ? zoomFOV : defaultFOV;
+        float startingFOV = cam.fieldOfView;
+        float timeElapsed = 0;
+
+        while (timeElapsed < timeToZoom)
+        {
+            cam.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+        cam.fieldOfView = targetFOV;
+        zoomRoutine = null;
+    }
+    #endregion
+
+    #region Health System Methods
+
+    private void ApplyDamage(float damage)
+    {
+        currentHealth -= damage;
+
+        // (if not null "?") Invokes this event to notify other systems
+        // (like UI) that are subscribed to this event of the health change.
+        OnDamage?.Invoke(currentHealth);
+
+        if (currentHealth <= 0)
+        {
+            KillPlayer();
+        }
+        else if (regeneratingHealth != null)
+        {
+            StopCoroutine(regeneratingHealth);
+        }
+
+        // Starts the health regeneration coroutine.
+        regeneratingHealth = StartCoroutine(RegenerateHealth());
+    }
+
+    private void KillPlayer()
+    {
+        currentHealth = 0;
+        OnDamage?.Invoke(currentHealth);
+
+        // Stops health regen if the player is dead.
+        if (regeneratingHealth != null)
+        {
+            StopCoroutine(regeneratingHealth);
+        }
+        // Implement what happens when the player dies
+
+        // Display death screen with replay button.
+        DisableMovement();
+        Debug.Log("Dead");
+    }
+
+    // Coroutine that gradually restores the player's health over time after a delay.
+    private IEnumerator RegenerateHealth()
+    {
+        // Frame 1: Starts the coroutine.
+        // Waits for 'timeBeforeRegenStarts' seconds before executing the next line.
+        // This is a pause, not a block; other game operations continue.
+        yield return new WaitForSeconds(timeBeforeRegenStarts);
+
+        // Frame after delay: The wait is over.
+        // Sets up another wait time for health increment.
+        WaitForSeconds timeToWait = new WaitForSeconds(healthTimeIncrement);
+
+        // Enters a loop, executed once per frame.
+        while (currentHealth < maxHealth)
+        {
+            // Increases the player's health by 'healthValueIncrement'.
+            currentHealth += healthValueIncrement;
+
+            // Ensures health does not exceed the maximum limit.
+            currentHealth = Mathf.Min(currentHealth, maxHealth);
+
+            // (if not null "?") Invokes this event to update
+            // any listeners (like UI) about the health change.
+            OnHeal?.Invoke(currentHealth);
+
+            // Waits for 'healthTimeIncrement' seconds before next loop iteration.
+            // Again, this wait is non-blocking.
+            yield return timeToWait;
+        }
+
+        // Once the loop is complete (health is fully regenerated), this line is reached.
+        // Resets the coroutine reference, indicating that regeneration is complete.
+        regeneratingHealth = null;
+    }
+    public float GetMaxHealth()
+    {
+        return maxHealth;
+    }
+    #endregion
+
+    #region Shooting methods
+    private void HandleGunSwitch()
+    {
         lastGun = currentGun;
         if (Input.GetButtonDown("Gun0")) currentGun = 0;
         if (Input.GetButtonDown("Gun1")) currentGun = 1;
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (lastGun != currentGun) SwitchGun(lastGun);
-
-        if (currentGun == 2) _projection.SimulateTrajectory(gunPoint.position);
     }
+
+    private void HandleFiring()
+    {
+        // Shooting code
+        delaySinceFiring += Time.deltaTime;
+        if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
+        {
+            delaySinceFiring = 0f;
+            StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed, gunList[currentGun].bulletDelay, gunList[currentGun].bulletPrecision));
+        }
+    }
+
     void SwitchGun(int lastGun)
     {
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
-    }
-    bool IsGrounded()
-    {
-        return Physics.CheckSphere(groundChecker.position, groundCheckDistance, LayerMask.GetMask("Ground"));
-    }
- 
 
+        if (currentGun == 2) trajectoryLine.SetActive(true);
+        else trajectoryLine.SetActive(false);
+    }
+    #endregion
+
+    // !!!!!!
+    // Rework needed here to make bullets a general (abstract or interface ?) class
+    // with each bullet type inherinting from it and then overloading a Shoot() method
+    // that handles the behavior of the bullet differently. BulletSpeed goes there too.
+    //
+    // Gun class should only handle gun behavior such as firing rate, ammo,
+    // number of bullet to instantiate, etc.
+    // !!!!!!
     IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
     {
         for (int i = 0; i < amount; i++)
         {
             var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, cam.transform.rotation);
 
-            //Special behavior for Teleporter Gun
+            // Special behavior for Teleporter Gun
             if (currentGun == 2)
             {
-                Debug.Log("PC gunList[currentGun].bulletSpeed = " + gunList[currentGun].bulletSpeed);
-               
-
-                //if (bulletObject == null)
-                //{
-                //    Debug.LogError("TeleporterBulletBehavior component not found on the instantiated object");
-                //    continue;
-                //}
-
                 Debug.Log("Shooting TP Bullet");
+                bulletObject.GetComponent<TeleporterBulletBehavior_test>().GetTranslocatorScreenReference(translocatorScreen);
                 bulletObject.GetComponent<TeleporterBulletBehavior_test>().Shoot_TP_Bullet();
             }
             else
             {
-                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + Random.insideUnitSphere * precision, ForceMode.Impulse);
+                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + UnityEngine.Random.insideUnitSphere * precision, ForceMode.Impulse);
             }
 
             yield return new WaitForSeconds(delay);
         }
     }
+
+    #region Helper / debug functions
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.magenta;
+        //Gizmos.DrawLine(groundChecker.position, new Vector3(groundChecker.position.x, groundChecker.position.y - groundCheckDistance, groundChecker.position.z));
+        Gizmos.DrawWireSphere(groundChecker.position, groundCheckDistance);
+    }
+    #endregion
 }
 
 [System.Serializable]
