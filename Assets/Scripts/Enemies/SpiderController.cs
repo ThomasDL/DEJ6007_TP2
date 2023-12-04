@@ -8,8 +8,6 @@ public class SpiderController : EnemyBase
     public GameObject bulletPrefab;
     public Transform shootingPoint;
 
-    Animator spiderAnim;
-
     Rigidbody thisRigidbody;
 
     float checkPlayerRepeatRate = 0.5f;
@@ -31,9 +29,11 @@ public class SpiderController : EnemyBase
 
     void Start()
     {
-        spiderAnim = GetComponentInChildren<Animator>();
+        thisAnim = GetComponentInChildren<Animator>();
         thisRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("SetEnemyState", 0f, checkPlayerRepeatRate);
+        healthSlider.maxValue = maxHealth;
+        healthSlider.value = maxHealth;
     }
 
     new void Update()
@@ -42,13 +42,13 @@ public class SpiderController : EnemyBase
         timeSinceLastAttack += Time.deltaTime;
         timeSinceJumping += Time.deltaTime;
 
-        if (enemyState == EnemyState.Attacking)
+        if (enemyState == EnemyState.Attacking && isAlive)
         {
             if (timeSinceLastAttack > nextAttackDelay)
             {
                 timeSinceLastAttack = 0f;
                 nextAttackDelay = Random.Range(attackRepeatMin, attackRepeatMax);
-                spiderAnim.SetTrigger("Attack");
+                thisAnim.SetTrigger("Attack");
                 Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(Vector3.Normalize(player.transform.position - visionPoint.position) * attackForce, ForceMode.Impulse);
             }
         }
@@ -59,11 +59,11 @@ public class SpiderController : EnemyBase
         previousPosition = currentPosition;
         currentPosition = transform.position;
         float speed = Vector3.Distance(currentPosition, previousPosition) / Time.deltaTime;
-        spiderAnim.SetFloat("Speed", speed);
+        thisAnim.SetFloat("Speed", speed);
     }
     private void FixedUpdate()
     {
-        if (enemyState == EnemyState.Attacking)
+        if (enemyState == EnemyState.Attacking && isAlive)
         {
             RotateTowardsPlayer();
 
@@ -73,7 +73,7 @@ public class SpiderController : EnemyBase
                 nextJumpDelay = Random.Range(jumpRepeatMin, jumpRepeatMax);
                 thisRigidbody.AddForce(Vector3.up * jumpForce + new Vector3(Random.Range(-jumpPrecision, jumpPrecision), Random.Range(-1, 1), Random.Range(-jumpPrecision, jumpPrecision)), ForceMode.Impulse);
                 isGrounded = false;
-                spiderAnim.SetTrigger("Jump");
+                thisAnim.SetTrigger("Jump");
             }
         }
     }
@@ -95,19 +95,22 @@ public class SpiderController : EnemyBase
     }
     void SetEnemyState()
     {
-        if (base.CheckIfPlayerIsInSight() && enemyState == EnemyState.Patrolling) 
+        if (isAlive)
         {
-            navMeshAgent.enabled = false;
-            thisRigidbody.isKinematic = false;
-            enemyState = EnemyState.Attacking;
+            if (base.CheckIfPlayerIsInSight() && enemyState == EnemyState.Patrolling)
+            {
+                navMeshAgent.enabled = false;
+                thisRigidbody.isKinematic = false;
+                enemyState = EnemyState.Attacking;
+            }
+            else if (isGrounded && enemyState == EnemyState.Attacking && !base.CheckIfPlayerIsInSight())
+            {
+                thisRigidbody.isKinematic = true;
+                navMeshAgent.enabled = true;
+                enemyState = EnemyState.Patrolling;
+                navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
+            }
         }
-        else if (isGrounded && enemyState == EnemyState.Attacking && !base.CheckIfPlayerIsInSight())
-        {
-            thisRigidbody.isKinematic = true;
-            navMeshAgent.enabled = true;
-            enemyState = EnemyState.Patrolling;
-            navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
-        } 
     }
     private void OnCollisionEnter(Collision collision)
     {

@@ -7,7 +7,6 @@ public class BossController : EnemyBase
     Rigidbody bossRigidbody;
     public ParticleSystem jumpForceParticles;
     public GameObject grenadePrefab;
-    Animator bossAnim;
 
     float visionCheckRate = 0.61f;
     float rotationSpeed = 50f;
@@ -26,12 +25,12 @@ public class BossController : EnemyBase
 
     void Start()
     {
-        bossAnim = GetComponentInChildren<Animator>();
+        thisAnim = GetComponentInChildren<Animator>();
         bossRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("VisionCheck", visionCheckRate, visionCheckRate);
+        healthSlider.maxValue = maxHealth;
+        healthSlider.value = maxHealth;
     }
-
-
     new void Update()
     {
         HandleWalk(); 
@@ -41,11 +40,11 @@ public class BossController : EnemyBase
         previousPosition = currentPosition;
         currentPosition = transform.position;
         float speed = Vector3.Distance(currentPosition, previousPosition) / Time.deltaTime;
-        bossAnim.SetFloat("Speed", speed);
+        thisAnim.SetFloat("Speed", speed);
     }
     private void FixedUpdate()
     {
-        if (enemyState == EnemyState.Attacking)
+        if (enemyState == EnemyState.Attacking && isAlive)
         {
             RotateTowardsPlayer();
         }
@@ -80,19 +79,23 @@ public class BossController : EnemyBase
     }
     void VisionCheck()
     {
-        if (base.CheckIfPlayerIsInSight() && !isAttacking)
+        if (isAlive)
         {
-            enemyState = EnemyState.Attacking;
-            navMeshAgent.enabled = false;
-            bossRigidbody.isKinematic = false;
-            InitiateRandomAttack();
+            if (base.CheckIfPlayerIsInSight() && !isAttacking)
+            {
+                enemyState = EnemyState.Attacking;
+                navMeshAgent.enabled = false;
+                bossRigidbody.isKinematic = false;
+                InitiateRandomAttack();
 
-        } else if (!base.CheckIfPlayerIsInSight() && enemyState == EnemyState.Attacking && !isAttacking)
-        {
-            enemyState = EnemyState.Patrolling;
-            bossRigidbody.isKinematic = true;
-            navMeshAgent.enabled = true;
-            navMeshAgent.SetDestination(player.transform.position);
+            }
+            else if (!base.CheckIfPlayerIsInSight() && enemyState == EnemyState.Attacking && !isAttacking)
+            {
+                enemyState = EnemyState.Patrolling;
+                bossRigidbody.isKinematic = true;
+                navMeshAgent.enabled = true;
+                navMeshAgent.SetDestination(player.transform.position);
+            }
         }
     }
     void JumpingAttack()
@@ -102,27 +105,30 @@ public class BossController : EnemyBase
         float jumpTotal = Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce);
         bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * jumpTotal + transform.up * jumpTotal, ForceMode.Impulse);
         isJumping = true;
-        bossAnim.SetFloat("JumpLength", 15000000 / (jumpTotal * jumpTotal));
-        bossAnim.SetTrigger("Jump");
+        thisAnim.SetFloat("JumpLength", 4000 / jumpTotal);
+        thisAnim.SetTrigger("Jump");
     }
     IEnumerator GrenadeAttack()
     {
         isAttacking = true;
-        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f,1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
+        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f, 1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
-        bossAnim.SetTrigger("Tongue");
-        Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
-        grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
-        yield return new WaitForSeconds(grenadeWaitTime);
-        isAttacking = false;
+        if (isAlive)
+        {
+            thisAnim.SetTrigger("Tongue");
+            Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
+            grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
+            yield return new WaitForSeconds(grenadeWaitTime);
+            isAttacking = false;
+        }
     }
     private void OnCollisionEnter(Collision collision)
     {
-        if (isJumping && (collision.gameObject.layer == LayerMask.NameToLayer("Ground") || collision.gameObject.CompareTag("Player")))
+        if (isJumping && (collision.gameObject.layer == LayerMask.NameToLayer("Ground") || collision.gameObject.CompareTag("Player")) && isAlive)
         {
             isJumping = false;
             jumpForceParticles.Play();
-            bossAnim.SetTrigger("Idle");
+            thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
                 Debug.Log("Player has been hit by a massive jump");
