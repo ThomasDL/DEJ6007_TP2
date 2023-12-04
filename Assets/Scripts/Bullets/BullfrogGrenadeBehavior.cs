@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BossGrenadeBehavior : MonoBehaviour
+public class BullfrogGrenadeBehavior : MonoBehaviour
 {
     Transform playerTransform;
     public ParticleSystem explosionParticles;
@@ -38,7 +38,7 @@ public class BossGrenadeBehavior : MonoBehaviour
     }
     IEnumerator Explosion()
     {
-        Debug.Log("The boss has hit the player with a grenade!");
+        PlayerController_test.OnTakeDamage(25);
         explosionParticles.Play();
         GetComponent<MeshRenderer>().enabled = false;
         yield return new WaitForSeconds(0.5f);

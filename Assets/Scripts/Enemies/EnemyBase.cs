@@ -2,17 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public enum EnemyState { Patrolling, Attacking};
 public abstract class EnemyBase : MonoBehaviour
 {
+    public float maxHealth;
+    public float currentHealth {  get; protected set; }
+
+    protected bool isAlive = true;
+
     public float patrolSpeed;
-    public float attackSpeed;
     protected EnemyState enemyState;
 
+    public Slider healthSlider;
     protected NavMeshAgent navMeshAgent;
     public Transform[] patrolWaypoints;
     protected int currentPatrolWaypoint;
+
+    protected Animator thisAnim;
 
     protected GameObject player;
     public Transform visionPoint;
@@ -28,6 +36,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        currentHealth = maxHealth;
         player = GameObject.Find("Player");
         enemyState = EnemyState.Patrolling;
         navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
@@ -35,7 +44,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected void Update()
     {
         timeSincePlayerWasSeen += Time.deltaTime;
-        if (enemyState == EnemyState.Patrolling)
+        if (enemyState == EnemyState.Patrolling && isAlive)
         {
             if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)
             {
@@ -59,5 +68,31 @@ public abstract class EnemyBase : MonoBehaviour
             else if (timeSincePlayerWasSeen < timeBeforePlayerIsForgotten) return true;
             else return false;
         }
+    }
+    public void DamageEnemy(float damage)
+    {
+        enemyState = EnemyState.Attacking;
+        timeSincePlayerWasSeen = 0f;
+        currentHealth -= damage;
+        healthSlider.gameObject.SetActive(true);
+        healthSlider.value = Mathf.Clamp(currentHealth, 0, maxHealth);
+        if (currentHealth <= 0 && isAlive)
+        {
+            StartCoroutine(EnemyDies());
+        }
+    }
+    protected IEnumerator EnemyDies()
+    {
+        isAlive = false;
+        navMeshAgent.enabled = false;
+        thisAnim.SetTrigger("Dead");
+        float timeToDie = 1f;
+        float totalTime = 0f;
+        while (totalTime < timeToDie)
+        {
+            totalTime += Time.deltaTime;
+            yield return null;
+        }
+        Destroy(gameObject);
     }
 }

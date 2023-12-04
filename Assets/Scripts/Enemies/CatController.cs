@@ -7,21 +7,23 @@ public class CatController : EnemyBase
     float attackModeRepeatRate = 0.45f;
     float attackDistance = 6f;
     float attackDelay = 1.2f;
+    public float attackSpeed;
+    public bool isMamaCat;
     int attackCount;
     float timeSinceLastAttack;
 
-    Animator catAnim;
-
     private void Start()
     {
-        catAnim = GetComponentInChildren<Animator>();
+        thisAnim = GetComponentInChildren<Animator>();
         InvokeRepeating("DecisionCheck", 0f, attackModeRepeatRate);
+        healthSlider.maxValue = maxHealth;
+        healthSlider.value = maxHealth;
     }
     private new void Update()
     {
         base.Update();
         timeSinceLastAttack += Time.deltaTime;
-        if (enemyState == EnemyState.Attacking)
+        if (enemyState == EnemyState.Attacking && isAlive)
         { 
             if (Vector3.Distance(player.transform.position, transform.position) < attackDistance && Mathf.Abs(Vector3.Angle(visionPoint.forward, player.transform.position - visionPoint.transform.position)) < 40)
             {
@@ -29,8 +31,8 @@ public class CatController : EnemyBase
                 if(timeSinceLastAttack > attackDelay)
                 {
                     timeSinceLastAttack = 0;
-                    catAnim.SetTrigger("Attack");
-                    Debug.Log("Cat has attacked " + attackCount);
+                    thisAnim.SetTrigger("Attack");
+                    PlayerController_test.OnTakeDamage(20);
                     attackCount++;
                 }
             }
@@ -43,22 +45,24 @@ public class CatController : EnemyBase
         previousPosition = currentPosition;
         currentPosition = transform.position;
         float speed = Vector3.Distance(currentPosition, previousPosition) / Time.deltaTime;
-        catAnim.SetFloat("Speed", speed);
+        thisAnim.SetFloat("Speed", speed * (isMamaCat? 0.5f : 1f));
     }
     void DecisionCheck()
     {
-        if (base.CheckIfPlayerIsInSight())
+        if (isAlive)
         {
-            enemyState = EnemyState.Attacking;
-            navMeshAgent.speed = attackSpeed;
-            navMeshAgent.SetDestination(player.transform.position);
-        }
-        else if (enemyState == EnemyState.Attacking)
-        {
-            enemyState = EnemyState.Patrolling;
-            navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
-            navMeshAgent.speed = patrolSpeed;
+            if (base.CheckIfPlayerIsInSight())
+            {
+                enemyState = EnemyState.Attacking;
+                navMeshAgent.speed = attackSpeed;
+                navMeshAgent.SetDestination(player.transform.position);
+            }
+            else if (enemyState == EnemyState.Attacking)
+            {
+                enemyState = EnemyState.Patrolling;
+                navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
+                navMeshAgent.speed = patrolSpeed;
+            }
         }
     }
-    
 }
