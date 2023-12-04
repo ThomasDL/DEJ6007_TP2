@@ -4707,14 +4707,6 @@ PrefabInstance:
       propertyPath: obstaclesParent
       value: 
       objectReference: {fileID: 1808696647}
-    - target: {fileID: 7814545407613058459, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: m_Name
-      value: Canvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 8897470508262636928, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
-      propertyPath: updateFillSpeed
-      value: 4
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
