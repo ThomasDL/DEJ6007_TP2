@@ -29,6 +29,7 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float sprintingJumpForce = 11f;
     [SerializeField] private float crouchingJumpForce = 6f;
     private float jumpForce;
+    private bool wasGroundedLastFrame;
 
     [Header("Coyote Time")]
     private float coyoteTimeDuration = 15f / 60f; // A coyote jump timeframe equivalent to 15 frames at 60 FPS
@@ -88,6 +89,8 @@ public class PlayerController_test : MonoBehaviour
 
     [Header("Zoom parameters")]
     [SerializeField] private float timeToZoom = 0.3f;
+
+    // could be moved to a gun variable, so we can have different aiming
     [SerializeField] private float zoomFOV = 30f;
     private float defaultFOV;
     private Coroutine zoomRoutine;
@@ -220,6 +223,7 @@ public class PlayerController_test : MonoBehaviour
         defaultYPos = cam.transform.localPosition.y;
         defaultFOV = cam.fieldOfView;
         currentHealth = maxHealth; // Initialize current health to max at start
+        wasGroundedLastFrame = isGrounded;
     }
 
     private void OnEnable()
@@ -260,6 +264,8 @@ public class PlayerController_test : MonoBehaviour
         HandleFiring();
 
         HandleGunSwitch();
+
+        wasGroundedLastFrame = isGrounded;
     }
 
     #region Movement methods
@@ -274,7 +280,12 @@ public class PlayerController_test : MonoBehaviour
         if (isGrounded)
         {
             moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
-            verticalVelocity.y = 0f;
+            
+            // Check if the player has just landed
+            if (!wasGroundedLastFrame)
+            {
+                verticalVelocity.y = 0f;
+            }
         }
 
         if (willSlideOnSlopes && IsSliding)
@@ -287,6 +298,8 @@ public class PlayerController_test : MonoBehaviour
         }
 
         controller.Move(moveSpeed * Time.deltaTime * moveDirection);
+
+        wasGroundedLastFrame = isGrounded;
     }
 
     private void HandleJump()

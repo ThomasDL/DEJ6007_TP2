@@ -480,7 +480,7 @@ MonoBehaviour:
   walkingJumpForce: 10
   sprintingJumpForce: 12
   crouchingJumpForce: 8
-  groundCheckDistance: 0.25
+  groundCheckDistance: 0.14
   canSprint: 1
   canJump: 1
   canCrouch: 1
@@ -499,7 +499,7 @@ MonoBehaviour:
   crouchBobSpeed: 8
   crouchBobAmount: 0.05
   timeToZoom: 0.3
-  zoomFOV: 30
+  zoomFOV: 35
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
@@ -573,7 +573,7 @@ Transform:
   m_GameObject: {fileID: 3514266938134504868}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.92, z: 0}
+  m_LocalPosition: {x: 0, y: -0.96, z: 0.16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
