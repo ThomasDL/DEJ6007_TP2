@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BossController : EnemyBase
+public class BullfrogController : EnemyBase
 {
     Rigidbody bossRigidbody;
     public ParticleSystem jumpForceParticles;
@@ -21,7 +21,7 @@ public class BossController : EnemyBase
     float jumpForce = 1105000f;
     float jumpWaitTime = 1f;
     bool isJumping = false;
-    float jumpImpactRadius = 10f;
+    float jumpImpactRadius = 12f;
 
     void Start()
     {
@@ -131,7 +131,7 @@ public class BossController : EnemyBase
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
-                Debug.Log("Player has been hit by a massive jump");
+                PlayerController_test.OnTakeDamage(30);
             }
             StartCoroutine(WaitAfterJump());
         }

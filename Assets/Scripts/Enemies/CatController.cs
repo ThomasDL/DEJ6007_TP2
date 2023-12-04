@@ -32,7 +32,7 @@ public class CatController : EnemyBase
                 {
                     timeSinceLastAttack = 0;
                     thisAnim.SetTrigger("Attack");
-                    Debug.Log("Cat has attacked " + attackCount);
+                    PlayerController_test.OnTakeDamage(20);
                     attackCount++;
                 }
             }
