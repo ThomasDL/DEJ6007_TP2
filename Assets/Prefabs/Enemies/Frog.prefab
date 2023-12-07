@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6616106056196634121}
   - component: {fileID: 7616845681980018232}
   - component: {fileID: 7884635999273283696}
+  - component: {fileID: 4502796118690091503}
   m_Layer: 8
   m_Name: Frog
   m_TagString: Enemy
@@ -110,6 +111,27 @@ MonoBehaviour:
   jumpForceParticles: {fileID: 9222842896016326509}
   grenadePrefab: {fileID: 6720055664682017855, guid: b0821818296d2f643977a13e565a4361, type: 3}
   grenadeThrowPoint: {fileID: 6921090340439942806}
+--- !u!135 &4502796118690091503
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2793913655334270176}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1
+  m_Center: {x: 0, y: 1.2, z: 0}
 --- !u!1 &6064218726032603739
 GameObject:
   m_ObjectHideFlags: 0

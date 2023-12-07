@@ -6,6 +6,7 @@ public class SpiderBulletBehavior : MonoBehaviour
 {
     float timeToDestroy = 10f;
     float timeSpent = 0f;
+    float bulletStrength = 15;
 
     private void Update()
     {
@@ -16,7 +17,7 @@ public class SpiderBulletBehavior : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            PlayerController_test.OnTakeDamage(10);
+            PlayerController_test.OnTakeDamage(bulletStrength);
             Destroy(gameObject);
         }
     }

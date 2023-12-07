@@ -17,8 +17,24 @@ PrefabInstance:
       value: -334000983
       objectReference: {fileID: 0}
     - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
+      propertyPath: runSpeed
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: isMamaCat
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
+      propertyPath: maxHealth
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
+      propertyPath: patrolSpeed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
+      propertyPath: attackStrength
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 5475929251723042198, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: m_LocalScale.x
@@ -78,11 +94,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8282481575596504087, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.19
+      value: 0.41
       objectReference: {fileID: 0}
     - target: {fileID: 8282481575596504087, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.253
+      value: 1.16
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

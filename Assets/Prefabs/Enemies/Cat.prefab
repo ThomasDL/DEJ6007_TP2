@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2937594047080156031}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.96, z: 0.919}
+  m_LocalPosition: {x: 0, y: 1.95, z: 1.19}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 5475929251723042198}
   - component: {fileID: 2146689017167705851}
   - component: {fileID: 3386873938666691708}
+  - component: {fileID: 5086042476581515467}
   m_Layer: 8
   m_Name: Cat
   m_TagString: Enemy
@@ -110,8 +111,30 @@ MonoBehaviour:
   - {fileID: 0}
   visionPoint: {fileID: 8282481575596504087}
   visionDistance: 30
-  attackSpeed: 9
+  runSpeed: 9
   isMamaCat: 0
+  attackStrength: 10
+--- !u!135 &5086042476581515467
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8157310415796329519}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!1001 &6531132506719625975
 PrefabInstance:
   m_ObjectHideFlags: 0
