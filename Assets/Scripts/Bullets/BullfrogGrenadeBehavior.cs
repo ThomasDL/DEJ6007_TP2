@@ -6,8 +6,9 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
 {
     Transform playerTransform;
     public ParticleSystem explosionParticles;
-    
-    int bounceCount;
+
+    float explosionOnPlayerStrength = 25f;
+    float explosionOnEnemyStrength = 10f;
     float explosionRadius = 7f;
     
     private void Start()
@@ -17,30 +18,21 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            StartCoroutine(Explosion());
-            
-        } else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
-        {
-            if (Vector3.Distance(playerTransform.position, transform.position) < explosionRadius)
-            {
-                StartCoroutine(Explosion());
-            } else
-            {
-                bounceCount++;
-                if (bounceCount == 2)
-                {
-                    Destroy(gameObject);
-                }
-            }
-        }
+        StartCoroutine(Explosion());
     }
     IEnumerator Explosion()
     {
-        PlayerController_test.OnTakeDamage(25);
         explosionParticles.Play();
         GetComponent<MeshRenderer>().enabled = false;
+        Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        if(colliders.Length > 0)
+        {
+            foreach(Collider collider in colliders)
+            {
+                if (collider.CompareTag("Player")) PlayerController_test.OnTakeDamage(explosionOnPlayerStrength);
+                else if (collider.TryGetComponent<EnemyBase>(out EnemyBase enemyBase)) enemyBase.DamageEnemy(explosionOnEnemyStrength);
+            }
+        }
         yield return new WaitForSeconds(0.5f);
         Destroy(gameObject);
     }

@@ -18,6 +18,7 @@ public class BullfrogController : EnemyBase
     float grenadeWaitTime = 0.6f;
     float grenadeThrowForce = 4.6f;
 
+    float jumpStrength = 30f;
     float jumpForce = 1105000f;
     float jumpWaitTime = 1f;
     bool isJumping = false;
@@ -131,7 +132,7 @@ public class BullfrogController : EnemyBase
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
-                PlayerController_test.OnTakeDamage(30);
+                PlayerController_test.OnTakeDamage(jumpStrength);
             }
             StartCoroutine(WaitAfterJump());
         }
