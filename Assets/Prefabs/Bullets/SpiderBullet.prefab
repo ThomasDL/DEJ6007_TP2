@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3457170214929383661}
   - component: {fileID: 5757285219487345464}
   m_Layer: 0
-  m_Name: SquirrelBullet
+  m_Name: SpiderBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
