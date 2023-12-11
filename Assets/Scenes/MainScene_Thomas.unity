@@ -1807,7 +1807,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2396703812802120337, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: Player_test_achraf
       objectReference: {fileID: 0}
     - target: {fileID: 3495190233592404619, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: mouseSensitivity

@@ -49,6 +49,7 @@ public class SpiderController : EnemyBase
                 timeSinceLastAttack = 0f;
                 nextAttackDelay = Random.Range(attackRepeatMin, attackRepeatMax);
                 thisAnim.SetTrigger("Attack");
+                thisAudioSource.Play();
                 Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(Vector3.Normalize(player.transform.position - visionPoint.position) * attackForce, ForceMode.Impulse);
             }
         }

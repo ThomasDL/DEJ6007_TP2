@@ -26,7 +26,6 @@ public class BullfrogController : EnemyBase
 
     void Start()
     {
-        thisAnim = GetComponentInChildren<Animator>();
         bossRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("VisionCheck", visionCheckRate, visionCheckRate);
         healthSlider.maxValue = maxHealth;
@@ -106,6 +105,7 @@ public class BullfrogController : EnemyBase
         float jumpTotal = Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce);
         bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * jumpTotal + transform.up * jumpTotal, ForceMode.Impulse);
         isJumping = true;
+        thisAudioSource.Play();
         thisAnim.SetFloat("JumpLength", 4000 / jumpTotal);
         thisAnim.SetTrigger("Jump");
     }
@@ -116,6 +116,7 @@ public class BullfrogController : EnemyBase
         yield return new WaitForSeconds(grenadeWaitTime);
         if (isAlive)
         {
+            thisAudioSource.Play();
             thisAnim.SetTrigger("Tongue");
             Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
             grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
@@ -129,6 +130,7 @@ public class BullfrogController : EnemyBase
         {
             isJumping = false;
             jumpForceParticles.Play();
+            jumpForceParticles.gameObject.GetComponent<AudioSource>().Play();
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {

@@ -6,6 +6,7 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
 {
     Transform playerTransform;
     public ParticleSystem explosionParticles;
+    AudioSource grenadeAudioSource;
 
     float explosionOnPlayerStrength = 25f;
     float explosionOnEnemyStrength = 10f;
@@ -13,7 +14,8 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
     
     private void Start()
     {
-        playerTransform = GameObject.Find("Player").transform;
+        playerTransform = GameObject.Find("Player_test_achraf").transform;
+        grenadeAudioSource = GetComponent<AudioSource>();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -23,6 +25,7 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
     IEnumerator Explosion()
     {
         explosionParticles.Play();
+        grenadeAudioSource.Play();
         GetComponent<MeshRenderer>().enabled = false;
         Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
         if(colliders.Length > 0)
