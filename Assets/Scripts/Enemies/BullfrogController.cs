@@ -14,8 +14,8 @@ public class BullfrogController : EnemyBase
     bool isAttacking = false;
 
     public Transform grenadeThrowPoint;
-    float strafeJumpForce = 3000f;
-    float grenadeWaitTime = 0.6f;
+    float strafeJumpForce = 4000f;
+    float grenadeWaitTime = 0.7f;
     float grenadeThrowForce = 4.6f;
 
     float jumpStrength = 30f;
@@ -112,7 +112,7 @@ public class BullfrogController : EnemyBase
     IEnumerator GrenadeAttack()
     {
         isAttacking = true;
-        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f, 1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
+        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(0.7f, 1f) * (Random.Range(0,2) == 0 ? -1: 1) + transform.up * strafeJumpForce * 0.5f, ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
         if (isAlive)
         {
