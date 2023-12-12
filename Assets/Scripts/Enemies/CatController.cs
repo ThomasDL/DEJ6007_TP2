@@ -16,7 +16,6 @@ public class CatController : EnemyBase
 
     private void Start()
     {
-        thisAnim = GetComponentInChildren<Animator>();
         InvokeRepeating("DecisionCheck", 0f, attackModeRepeatRate);
         healthSlider.maxValue = maxHealth;
         healthSlider.value = maxHealth;
@@ -35,6 +34,7 @@ public class CatController : EnemyBase
                 {
                     timeSinceLastAttack = 0;
                     thisAnim.SetTrigger("Attack");
+                    thisAudioSource.Play();
                     PlayerController_test.OnTakeDamage(attackStrength);
                 }
             }

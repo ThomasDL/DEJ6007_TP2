@@ -14,8 +14,8 @@ public class BullfrogController : EnemyBase
     bool isAttacking = false;
 
     public Transform grenadeThrowPoint;
-    float strafeJumpForce = 3000f;
-    float grenadeWaitTime = 0.6f;
+    float strafeJumpForce = 4000f;
+    float grenadeWaitTime = 0.7f;
     float grenadeThrowForce = 4.6f;
 
     float jumpStrength = 30f;
@@ -26,7 +26,6 @@ public class BullfrogController : EnemyBase
 
     void Start()
     {
-        thisAnim = GetComponentInChildren<Animator>();
         bossRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("VisionCheck", visionCheckRate, visionCheckRate);
         healthSlider.maxValue = maxHealth;
@@ -106,16 +105,18 @@ public class BullfrogController : EnemyBase
         float jumpTotal = Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce);
         bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * jumpTotal + transform.up * jumpTotal, ForceMode.Impulse);
         isJumping = true;
+        thisAudioSource.Play();
         thisAnim.SetFloat("JumpLength", 4000 / jumpTotal);
         thisAnim.SetTrigger("Jump");
     }
     IEnumerator GrenadeAttack()
     {
         isAttacking = true;
-        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f, 1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
+        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(0.7f, 1f) * (Random.Range(0,2) == 0 ? -1: 1) + transform.up * strafeJumpForce * 0.5f, ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
         if (isAlive)
         {
+            thisAudioSource.Play();
             thisAnim.SetTrigger("Tongue");
             Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
             grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
@@ -129,6 +130,7 @@ public class BullfrogController : EnemyBase
         {
             isJumping = false;
             jumpForceParticles.Play();
+            jumpForceParticles.gameObject.GetComponent<AudioSource>().Play();
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
