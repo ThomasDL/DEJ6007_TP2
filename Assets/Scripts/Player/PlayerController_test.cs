@@ -41,6 +41,8 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float groundCheckDistance = 0.25f;
     private bool isGrounded;
 
+    public bool IsGrounded { get { return isGrounded; } }
+
     [Header("Modular movement options")]
     [SerializeField] private bool canSprint = true; // Enable sprint logic
     [SerializeField] private bool canJump = true; // Enable jump logic
@@ -575,6 +577,7 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Gun1")) currentGun = 1;
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
+        if (Input.GetButtonDown("Gun4")) currentGun = 4;
         if (lastGun != currentGun) SwitchGun(lastGun);
     }
 
