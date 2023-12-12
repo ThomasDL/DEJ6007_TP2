@@ -68,6 +68,15 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     {
         if (Physics.CheckSphere(groundChecker.position, groundCheckRadius, LayerMask.GetMask("Ground")) && !useAsGhost)
         {
+            translocatorScreen.SetActive(false);
+            _characterController_Unity.enabled = false;
+            _characterController_Unity.transform.position = groundChecker.position + new Vector3(0, _characterController_Unity.height / 2, 0);
+            _characterController_Unity.enabled = true;
+            Destroy(gameObject);
+        }
+        /*
+        if (Physics.CheckSphere(groundChecker.position, groundCheckRadius, LayerMask.GetMask("Ground")) && !useAsGhost)
+        {
             CheckCollisionWithFloor = true;
             translocatorBulletCamera.transform.rotation = Camera.main.transform.rotation;
             translocatorScreen.SetActive(true);
@@ -84,5 +93,6 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
         }
         //Temporary solution to destroy the bullet if it takes too long
         //Destroy(gameObject, travelTimeDestroy);
+        */
     }
 }

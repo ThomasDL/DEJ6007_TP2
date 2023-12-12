@@ -17,7 +17,7 @@ public class SpiderBulletBehavior : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            PlayerController_test.OnTakeDamage(bulletStrength);
+            PlayerController_test.OnTakeDamage(bulletStrength + Random.Range(-5,5));
             Destroy(gameObject);
         }
     }

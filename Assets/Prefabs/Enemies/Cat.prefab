@@ -112,7 +112,7 @@ MonoBehaviour:
   - {fileID: 0}
   visionPoint: {fileID: 8282481575596504087}
   visionDistance: 30
-  runSpeed: 9
+  runSpeed: 12
   isMamaCat: 0
   attackStrength: 10
 --- !u!135 &5086042476581515467
