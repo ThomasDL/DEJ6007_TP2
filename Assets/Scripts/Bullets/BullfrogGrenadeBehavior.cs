@@ -9,7 +9,7 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
     AudioSource grenadeAudioSource;
 
     float explosionOnPlayerStrength = 25f;
-    float explosionOnEnemyStrength = 10f;
+    float explosionOnEnemyStrength = 8f;
     float explosionRadius = 7f;
     
     private void Start()
@@ -32,8 +32,8 @@ public class BullfrogGrenadeBehavior : MonoBehaviour
         {
             foreach(Collider collider in colliders)
             {
-                if (collider.CompareTag("Player")) PlayerController_test.OnTakeDamage(explosionOnPlayerStrength);
-                else if (collider.TryGetComponent<EnemyBase>(out EnemyBase enemyBase)) enemyBase.DamageEnemy(explosionOnEnemyStrength);
+                if (collider.CompareTag("Player")) PlayerController_test.OnTakeDamage(explosionOnPlayerStrength + Random.Range(-5,5));
+                else if (collider.TryGetComponent<EnemyBase>(out EnemyBase enemyBase)) enemyBase.DamageEnemy(explosionOnEnemyStrength + Random.Range(-3,3));
             }
         }
         yield return new WaitForSeconds(0.5f);

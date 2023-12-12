@@ -15,9 +15,9 @@ public class SpiderController : EnemyBase
 
     float timeSinceLastAttack;
     float nextAttackDelay;
-    float attackRepeatMin = 0.6f;
-    float attackRepeatMax = 1f;
-    float attackForce = 10f;
+    float attackRepeatMin = 0.5f;
+    float attackRepeatMax = 0.9f;
+    float attackForce = 15f;
 
     float timeSinceJumping;
     float nextJumpDelay;

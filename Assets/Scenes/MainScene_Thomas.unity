@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.3894031, g: 0.4037972, b: 0.39348906, a: 1}
+  m_IndirectSpecularColor: {r: 0.38937172, g: 0.4037539, b: 0.39342067, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1853,6 +1853,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5554102709768210737, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: gunList.Array.data[3].gunSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 8f46512c76d4d2c4081793581bafe7c7, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -134,7 +134,7 @@ public class BullfrogController : EnemyBase
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
-                PlayerController_test.OnTakeDamage(jumpStrength);
+                PlayerController_test.OnTakeDamage(jumpStrength + Random.Range(-5, 5));
             }
             StartCoroutine(WaitAfterJump());
         }

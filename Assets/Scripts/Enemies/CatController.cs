@@ -35,7 +35,7 @@ public class CatController : EnemyBase
                     timeSinceLastAttack = 0;
                     thisAnim.SetTrigger("Attack");
                     thisAudioSource.Play();
-                    PlayerController_test.OnTakeDamage(attackStrength);
+                    PlayerController_test.OnTakeDamage(attackStrength + Random.Range(-3,3));
                 }
             }
             else navMeshAgent.isStopped = false;

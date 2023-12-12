@@ -8,6 +8,7 @@ public class PlayerController_test : MonoBehaviour
     [Header("References")]
     [SerializeField] private CharacterController controller;
     [SerializeField] private Camera cam;
+    [SerializeField] private AudioSource audioSource;
     [SerializeField] private Transform groundChecker;
     [SerializeField] private GameObject capsuleCharacter;
     [SerializeField] private GameObject trajectoryLine;
@@ -608,6 +609,7 @@ public class PlayerController_test : MonoBehaviour
     // !!!!!!
     IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
     {
+        audioSource.PlayOneShot(gunList[currentGun].gunSound);
         for (int i = 0; i < amount; i++)
         {
             var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, cam.transform.rotation);
@@ -650,4 +652,5 @@ public class Gun_test
     // 0 = super precise, 20f = very imprecise
     public float bulletPrecision;
     public GameObject bulletPrefab;
+    public AudioClip gunSound;
 }

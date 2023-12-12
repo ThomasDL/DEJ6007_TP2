@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: af8baa20126edbc45bcae7a933540f1d, type: 3}
     - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: runSpeed
-      value: 12
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: isMamaCat
