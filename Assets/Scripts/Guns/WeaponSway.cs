@@ -43,6 +43,12 @@ public class WeaponSway : MonoBehaviour
     private Vector3 initialLocalPosition;
     private Quaternion initialLocalRotation;
 
+    [Header("Aiming")]
+    public Vector3 normalPosition; // The normal resting position of the weapon
+    public Vector3 aimingPosition; // The position of the weapon when aiming
+    private bool isAiming; // A flag to indicate if the player is aiming
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,6 +64,14 @@ public class WeaponSway : MonoBehaviour
     void Update()
     {
         GetInput();
+
+        //if (!isAiming)
+        //{
+        //    Sway();
+        //    SwayRotation();
+        //    BobOffset();
+        //    BobRotation();
+        //}
 
         Sway();
         SwayRotation();
@@ -122,19 +136,38 @@ public class WeaponSway : MonoBehaviour
         externalRotation = rotation;
     }
 
+    //private void CompositePositionRotation()
+    //{
+    //    // Calculate sway and bobbing rotation
+    //    Quaternion swayBobRotation = Quaternion.Euler(swayEulerRot + bobEulerRotation);
+
+    //    // Combine the initial rotation with sway/bobbing rotation and external rotation (from prevent clip logic)
+    //    Quaternion combinedRotation = initialLocalRotation * swayBobRotation * externalRotation;
+
+    //    // Apply combined rotation
+    //    transform.localRotation = Quaternion.Slerp(transform.localRotation, combinedRotation, Time.deltaTime * smoothRot);
+
+    //    // Apply position changes
+    //    Vector3 targetPosition = initialLocalPosition + swayPos + bobPosition;
+    //    transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * smooth);
+    //}
+
     private void CompositePositionRotation()
     {
         // Calculate sway and bobbing rotation
         Quaternion swayBobRotation = Quaternion.Euler(swayEulerRot + bobEulerRotation);
 
-        // Combine the initial rotation with sway/bobbing rotation and external rotation (from prevent clip logic)
+        // Combine the initial rotation with sway/bobbing rotation and external rotation
         Quaternion combinedRotation = initialLocalRotation * swayBobRotation * externalRotation;
 
         // Apply combined rotation
         transform.localRotation = Quaternion.Slerp(transform.localRotation, combinedRotation, Time.deltaTime * smoothRot);
 
+        // Interpolate between normal position and aiming position based on isAiming
+        Vector3 targetPosition = isAiming ? aimingPosition : normalPosition;
+        targetPosition += swayPos + bobPosition;
+
         // Apply position changes
-        Vector3 targetPosition = initialLocalPosition + swayPos + bobPosition;
         transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * smooth);
     }
 
@@ -145,9 +178,12 @@ public class WeaponSway : MonoBehaviour
             // Determine the increment rate of speedCurve variable, based on whether the player is moving
             float incrementRate = _player.IsGrounded ? (walkInput.magnitude * bobExaggeration) : 1f;
 
-            // When the player is not moving, use a smaller increment for a slower breathing effect
+            // When the player is not moving, we use a smaller increment for a slower breathing effect
             float stationaryIncrement = 0.5f; // Adjust this value to control the breathing speed
-            float increment = Time.deltaTime * (walkInput != Vector2.zero ? incrementRate : stationaryIncrement) + 0.01f;
+            
+            bool isWalking = walkInput != Vector2.zero;
+            //float increment = Time.deltaTime * (walkInput != Vector2.zero ? incrementRate : stationaryIncrement) + 0.01f;
+            float increment = Time.deltaTime * ((isWalking && !isAiming) ? incrementRate : stationaryIncrement) + 0.01f;
 
             speedCurve += increment;
 
@@ -155,8 +191,9 @@ public class WeaponSway : MonoBehaviour
             speedCurve %= 2 * Mathf.PI;
 
             // Adjust the bobLimit for a more subtle effect when not moving
-            float stationaryBobMultiplier = 0.3f; // Adjust this value to control the breathing amplitude
-            Vector3 adjustedBobLimit = walkInput != Vector2.zero ? bobLimit : bobLimit * stationaryBobMultiplier;
+            float stationaryBobMultiplier = 0.2f; // Adjust this value to control the breathing amplitude
+            //Vector3 adjustedBobLimit = walkInput != Vector2.zero ? bobLimit : bobLimit * stationaryBobMultiplier;
+            Vector3 adjustedBobLimit = (isWalking && !isAiming) ? bobLimit : bobLimit * stationaryBobMultiplier;
 
             // Calculate the bob position using the adjusted limits and actual walkInput direction
             // Negating walkInput values to move in the opposite direction of player movement
@@ -191,6 +228,11 @@ public class WeaponSway : MonoBehaviour
         {
             bobEulerRotation = Vector3.zero;
         }
+    }
+
+    public void SetAiming(bool aiming)
+    {
+        isAiming = aiming;
     }
 
     //PREVIOUSLY WORKING BUT BASIC CODE

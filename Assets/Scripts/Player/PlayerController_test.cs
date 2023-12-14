@@ -141,7 +141,7 @@ public class PlayerController_test : MonoBehaviour
     private float defaultFOV;
     private Coroutine zoomRoutine;
 
-    // Slope sligind parameters
+    
     private Vector3 hitPointNormal;
 
     #endregion
@@ -436,41 +436,62 @@ public class PlayerController_test : MonoBehaviour
     {
         if (Input.GetKeyDown(zoomKey) && canShoot)
         {
-            if (zoomRoutine != null)
-            {
-                StopCoroutine(zoomRoutine);
-                zoomRoutine = null;
-            }
-
-            zoomRoutine = StartCoroutine(ToggleZoom(true));
+            EnableZoom();
         }
 
         if (Input.GetKeyUp(zoomKey))
         {
-            if (zoomRoutine != null)
-            {
-                StopCoroutine(zoomRoutine);
-                zoomRoutine = null;
-            }
-
-            zoomRoutine = StartCoroutine(ToggleZoom(false));
+            DisableZoom();
         }
+    }
+
+    private void EnableZoom()
+    {
+        weapon.GetComponent<WeaponSway>().SetAiming(true);
+
+        if (zoomRoutine != null)
+        {
+            StopCoroutine(zoomRoutine);
+            zoomRoutine = null;
+        }
+
+        zoomRoutine = StartCoroutine(ToggleZoom(true));
+    }
+
+    private void DisableZoom()
+    {
+        weapon.GetComponent<WeaponSway>().SetAiming(false);
+
+        if (zoomRoutine != null)
+        {
+            StopCoroutine(zoomRoutine);
+            zoomRoutine = null;
+        }
+
+        zoomRoutine = StartCoroutine(ToggleZoom(false));
     }
 
     private IEnumerator ToggleZoom(bool isEnter)
     {
         float targetFOV = isEnter ? gunList[currentGun].customZoomFOV : defaultFOV;
+
         float playerCameraStartingFOV = playerCamera.fieldOfView;
         float weaponCameraStartingFOV = weaponCamera.fieldOfView;
+
         float timeElapsed = 0;
 
         while (timeElapsed < timeToZoom)
         {
             playerCamera.fieldOfView = Mathf.Lerp(playerCameraStartingFOV, targetFOV, timeElapsed / timeToZoom);
+            weaponCamera.fieldOfView = Mathf.Lerp(weaponCameraStartingFOV, targetFOV, timeElapsed / timeToZoom);
+
             timeElapsed += Time.deltaTime;
+
             yield return null;
         }
+
         playerCamera.fieldOfView = targetFOV;
+
         zoomRoutine = null;
     }
     #endregion
@@ -580,12 +601,13 @@ public class PlayerController_test : MonoBehaviour
 
     void SwitchGun(int lastGun)
     {
-        zoomRoutine = StartCoroutine(ToggleZoom(false));
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
 
         if (currentGun == 2) trajectoryLine.SetActive(true);
         else trajectoryLine.SetActive(false);
+
+        DisableZoom();
     }
 
     private void PreventClip()
@@ -595,6 +617,8 @@ public class PlayerController_test : MonoBehaviour
 
         if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
         {
+            DisableZoom();
+
             //Get percentage from 0 to max distance
             lerpPosition = 1 - (hit.distance / checkDistance);
         }
