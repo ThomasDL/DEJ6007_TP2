@@ -179,7 +179,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1680409619747073824}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &8106305758403533189
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -470,7 +470,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 8366251379855116509}
-  cam: {fileID: 6740322258806411974}
+  playerCamera: {fileID: 6740322258806411974}
+  weaponCamera: {fileID: 7544983372677995965}
   audioSource: {fileID: 6290303381632495710}
   groundChecker: {fileID: 4797186735741915639}
   capsuleCharacter: {fileID: 6356643009802062552}
@@ -501,7 +502,6 @@ MonoBehaviour:
   crouchBobSpeed: 8
   crouchBobAmount: 0.05
   timeToZoom: 0.3
-  zoomFOV: 35
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
@@ -511,6 +511,7 @@ MonoBehaviour:
     bulletPrecision: 15
     bulletPrefab: {fileID: 5038152224482185999, guid: 5162eff169a672f458923ef62367402b, type: 3}
     gunSound: {fileID: 8300000, guid: 15a94b42aa4584e4cac2450f488a236a, type: 3}
+    customZoomFOV: 45
   - gunName: Sniper
     bulletAmount: 1
     bulletSpeed: 200
@@ -519,6 +520,7 @@ MonoBehaviour:
     bulletPrecision: 0
     bulletPrefab: {fileID: 7831719179667508855, guid: 35419a536fb8f5a4abee68ac109a105d, type: 3}
     gunSound: {fileID: 8300000, guid: 943bde653d3d96247b5c5f16726acd5b, type: 3}
+    customZoomFOV: 20
   - gunName: Teleporter
     bulletAmount: 1
     bulletSpeed: 32
@@ -527,6 +529,7 @@ MonoBehaviour:
     bulletPrecision: 3
     bulletPrefab: {fileID: 4865959323936724256, guid: b2dd54e0ac26a274fb9a2447b35c0f97, type: 3}
     gunSound: {fileID: 8300000, guid: c58561ab7dfba3a40a9375794924ad45, type: 3}
+    customZoomFOV: 45
   - gunName: PlatformCreator
     bulletAmount: 1
     bulletSpeed: 200
@@ -535,6 +538,7 @@ MonoBehaviour:
     bulletPrecision: 0
     bulletPrefab: {fileID: 6394447451172745629, guid: 60a0df82801ca3c44999ab0ad1bcc11e, type: 3}
     gunSound: {fileID: 8300000, guid: 8f46512c76d4d2c4081793581bafe7c7, type: 3}
+    customZoomFOV: 40
   - gunName: ZiplineGun
     bulletAmount: 1
     bulletSpeed: 50
@@ -543,6 +547,7 @@ MonoBehaviour:
     bulletPrecision: 0
     bulletPrefab: {fileID: 7831719179667508855, guid: 35419a536fb8f5a4abee68ac109a105d, type: 3}
     gunSound: {fileID: 0}
+    customZoomFOV: 45
   gunObjets:
   - {fileID: 1680409619747073824}
   - {fileID: 1538807583822366407}
@@ -558,7 +563,8 @@ MonoBehaviour:
   ignoredLayers:
     serializedVersion: 2
     m_Bits: 1920
-  newDirection: {x: 0, y: -90, z: 0}
+  noShootingPosition: {x: 0, y: -90, z: 0}
+  shootDisablingThreshold: 0.1
   maxHealth: 100
   timeBeforeRegenStarts: 2.25
   healthValueIncrement: 1
@@ -715,7 +721,7 @@ Transform:
   m_GameObject: {fileID: 3945841803772249842}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.063, z: 0.47}
+  m_LocalPosition: {x: 0, y: 0.308, z: 0.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1241,7 +1247,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.1
   far clip plane: 1000
   field of view: 70
   orthographic: 0
@@ -1358,7 +1364,7 @@ GameObject:
   - component: {fileID: 5921972228305770831}
   - component: {fileID: 8542021078018818037}
   - component: {fileID: 1847230336110899950}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: PlatformCreator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1587,8 +1593,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7412424657373415461}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.4319992, y: -0.36199987, z: 0.6010001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.355, y: -0.293, z: 0.613}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1614,16 +1620,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb66b02825818084eaeaea43e36eb8c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  step: 0.1
-  maxStepDistance: 0.15
-  rotationStep: 4
-  maxRotationStep: 5
-  smooth: 6
+  sway: 1
+  swayRotation: 1
+  bobOffset: 1
+  bobSway: 1
+  step: 0.01
+  maxStepDistance: 0.1
+  rotationStep: 8
+  maxRotationStep: 12
+  smooth: 10
   speedCurve: 0
-  travelLimit: {x: 0.025, y: 0.025, z: 0.025}
-  bobLimit: {x: 0.025, y: 0.025, z: 0.025}
-  bobExaggeration: 5
-  multiplier: {x: 10, y: 10, z: 10}
+  travelLimit: {x: 0.021, y: 0.01, z: 0.032}
+  bobLimit: {x: 0.015, y: 0.008, z: 0.015}
+  bobExaggeration: 1
+  multiplier: {x: 1.5, y: 1.5, z: 1.5}
 --- !u!1001 &5285326664597707270
 PrefabInstance:
   m_ObjectHideFlags: 0

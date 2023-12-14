@@ -7,7 +7,8 @@ public class PlayerController_test : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private CharacterController controller;
-    [SerializeField] private Camera cam;
+    [SerializeField] private Camera playerCamera;
+    [SerializeField] private Camera weaponCamera;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private Transform groundChecker;
     [SerializeField] private GameObject capsuleCharacter;
@@ -77,6 +78,8 @@ public class PlayerController_test : MonoBehaviour
         get { return isCrouching; }
     }
 
+    public float CrouchHeight { get { return crouchHeight; } }
+
     private bool duringCrouchAnimation = false;
     private KeyCode crouchKey = KeyCode.LeftControl; // Key for crouching
 
@@ -89,17 +92,6 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float crouchBobAmount = 0.025f;
     private float defaultYPos = 0;
     private float timer;
-
-    [Header("Zoom parameters")]
-    [SerializeField] private float timeToZoom = 0.3f;
-
-    // could be moved to a gun variable, so we can have different aiming
-    [SerializeField] private float zoomFOV = 30f;
-    private float defaultFOV;
-    private Coroutine zoomRoutine;
-
-    // Slope sligind parameters
-    private Vector3 hitPointNormal;
 
     private bool IsSliding
     {
@@ -140,7 +132,21 @@ public class PlayerController_test : MonoBehaviour
 
     #endregion
 
-    #region ClippingPrevention
+    #region WeaponAimZoom
+
+    [Header("Zoom parameters")]
+    [SerializeField] private float timeToZoom = 0.3f;
+
+    // could be moved to a gun variable, so we can have different aiming
+    private float defaultFOV;
+    private Coroutine zoomRoutine;
+
+    // Slope sligind parameters
+    private Vector3 hitPointNormal;
+
+    #endregion
+
+    #region WeaponClippingPrevention
 
     [Header("Weapon clipping prevention")]
     [SerializeField] private GameObject weapon;
@@ -151,39 +157,18 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private LayerMask ignoredLayers;
 
     [Tooltip("Set the rotation to prevent clipping. Default is (0, -90, 0)")]
-    [SerializeField] private Vector3 newDirection = new Vector3(0, -90, 0);
+    [SerializeField] private Vector3 noShootingPosition = new Vector3(0, -90, 0);
 
     // Threshold compared to weapon rotation when near an obstacle
-    private float shootDisableThreshold = 0.15f;
+    [SerializeField] private float shootDisablingThreshold = 0.10f;
 
     private float lerpPosition;
     RaycastHit hit;
-
-    private void PreventClip()
-    {
-        // Define a layer mask that ignores the Player and Gun layers
-        int layerMaskToIgnore = ~ignoredLayers; // Invert the mask to ignore these layers
-
-        if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
-        {
-            //Get percentage from 0 to max distance
-            lerpPosition = 1 - (hit.distance / checkDistance);
-        }
-        else
-        {
-            //if we are not hitting anything, set to 0
-            lerpPosition = 0;
-        }
-
-        lerpPosition = Mathf.Clamp01(lerpPosition);
-        weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
-
-        // Disable shooting if the weapon is rotated significantly
-        canShoot = lerpPosition < shootDisableThreshold;
-    }
-
     #endregion
 
+    #region WeaponRecoil
+    // Variables for Recoil
+    #endregion
 
     #region Health System
 
@@ -223,8 +208,8 @@ public class PlayerController_test : MonoBehaviour
             Destroy(gameObject);
         }
 
-        defaultYPos = cam.transform.localPosition.y;
-        defaultFOV = cam.fieldOfView;
+        defaultYPos = playerCamera.transform.localPosition.y;
+        defaultFOV = playerCamera.fieldOfView;
         currentHealth = maxHealth; // Initialize current health to max at start
         wasGroundedLastFrame = isGrounded;
     }
@@ -352,7 +337,7 @@ public class PlayerController_test : MonoBehaviour
 
     private IEnumerator CrouchStand()
     {
-        if (isCrouching && Physics.Raycast(cam.transform.position, Vector3.up, 2f))
+        if (isCrouching && Physics.Raycast(playerCamera.transform.position, Vector3.up, 2f))
             yield break;
 
         duringCrouchAnimation = true;
@@ -415,10 +400,10 @@ public class PlayerController_test : MonoBehaviour
         if (Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f)
         {
             timer += Time.deltaTime * (isCrouching ? crouchBobSpeed : IsSprinting ? sprintBobSpeed : walkBobSpeed);
-            cam.transform.localPosition = new Vector3(
-                cam.transform.localPosition.x,
+            playerCamera.transform.localPosition = new Vector3(
+                playerCamera.transform.localPosition.x,
                 defaultYPos + Mathf.Sin(timer) * (isCrouching ? crouchBobAmount : IsSprinting ? sprintBobAmount : walkBobAmount),
-                cam.transform.localPosition.z);
+                playerCamera.transform.localPosition.z);
         }
     }
 
@@ -449,7 +434,7 @@ public class PlayerController_test : MonoBehaviour
     #region Zoom Methods
     private void HandleZoom()
     {
-        if (Input.GetKeyDown(zoomKey))
+        if (Input.GetKeyDown(zoomKey) && canShoot)
         {
             if (zoomRoutine != null)
             {
@@ -474,17 +459,18 @@ public class PlayerController_test : MonoBehaviour
 
     private IEnumerator ToggleZoom(bool isEnter)
     {
-        float targetFOV = isEnter ? zoomFOV : defaultFOV;
-        float startingFOV = cam.fieldOfView;
+        float targetFOV = isEnter ? gunList[currentGun].customZoomFOV : defaultFOV;
+        float playerCameraStartingFOV = playerCamera.fieldOfView;
+        float weaponCameraStartingFOV = weaponCamera.fieldOfView;
         float timeElapsed = 0;
 
         while (timeElapsed < timeToZoom)
         {
-            cam.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
+            playerCamera.fieldOfView = Mathf.Lerp(playerCameraStartingFOV, targetFOV, timeElapsed / timeToZoom);
             timeElapsed += Time.deltaTime;
             yield return null;
         }
-        cam.fieldOfView = targetFOV;
+        playerCamera.fieldOfView = targetFOV;
         zoomRoutine = null;
     }
     #endregion
@@ -569,7 +555,7 @@ public class PlayerController_test : MonoBehaviour
     }
     #endregion
 
-    #region Shooting methods
+    #region Weapon handling methods
     private void HandleGunSwitch()
     {
         lastGun = currentGun;
@@ -594,13 +580,39 @@ public class PlayerController_test : MonoBehaviour
 
     void SwitchGun(int lastGun)
     {
+        zoomRoutine = StartCoroutine(ToggleZoom(false));
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
 
         if (currentGun == 2) trajectoryLine.SetActive(true);
         else trajectoryLine.SetActive(false);
     }
-    #endregion
+
+    private void PreventClip()
+    {
+        // Define a layer mask that ignores the Player and Gun layers
+        int layerMaskToIgnore = ~ignoredLayers; // Invert the mask to ignore these layers
+
+        if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
+        {
+            //Get percentage from 0 to max distance
+            lerpPosition = 1 - (hit.distance / checkDistance);
+        }
+        else
+        {
+            //if we are not hitting anything, set to 0
+            lerpPosition = 0;
+        }
+
+        lerpPosition = Mathf.Clamp01(lerpPosition);
+        //weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
+
+        Quaternion clipRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(noShootingPosition), lerpPosition);
+        weapon.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
+
+        // Disable shooting if the weapon is rotated significantly
+        canShoot = lerpPosition < shootDisablingThreshold;
+    }
 
     // !!!!!!
     // Rework needed here to make bullets a general (abstract or interface ?) class
@@ -615,7 +627,7 @@ public class PlayerController_test : MonoBehaviour
         audioSource.PlayOneShot(gunList[currentGun].gunSound);
         for (int i = 0; i < amount; i++)
         {
-            var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, cam.transform.rotation);
+            var bulletObject = Instantiate(gunList[currentGun].bulletPrefab, gunPoint.position, playerCamera.transform.rotation);
 
             // Special behavior for Teleporter Gun
             if (currentGun == 2)
@@ -632,6 +644,10 @@ public class PlayerController_test : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
     }
+
+    #endregion
+
+
 
     #region Helper / debug functions
     void OnDrawGizmosSelected()
@@ -656,4 +672,5 @@ public class Gun_test
     public float bulletPrecision;
     public GameObject bulletPrefab;
     public AudioClip gunSound;
+    public float customZoomFOV;
 }
