@@ -1831,11 +1831,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 1.429, y: -31.262, z: -99.451}
---- !u!1 &792558195 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3815737208329882630, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
-  m_PrefabInstance: {fileID: 9142894670020584312}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &896318711
 GameObject:
   m_ObjectHideFlags: 0
@@ -5299,26 +5294,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3815737208329882630, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3836647805329058275, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
       propertyPath: playerLook
       value: 
       objectReference: {fileID: 593995859}
     - target: {fileID: 3836647805329058275, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
-      propertyPath: gameOverScreen
-      value: 
-      objectReference: {fileID: 792558195}
-    - target: {fileID: 3836647805329058275, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
       propertyPath: playerController
       value: 
       objectReference: {fileID: 1318987516}
-    - target: {fileID: 7847657248535021247, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
