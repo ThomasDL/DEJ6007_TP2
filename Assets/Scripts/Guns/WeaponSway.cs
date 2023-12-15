@@ -47,7 +47,7 @@ public class WeaponSway : MonoBehaviour
     public Vector3 normalPosition; // The normal resting position of the weapon
     public Vector3 aimingPosition; // The position of the weapon when aiming
     private bool isAiming; // A flag to indicate if the player is aiming
-
+    
 
     // Start is called before the first frame update
     void Start()
@@ -65,15 +65,7 @@ public class WeaponSway : MonoBehaviour
     {
         GetInput();
 
-        //if (!isAiming)
-        //{
-        //    Sway();
-        //    SwayRotation();
-        //    BobOffset();
-        //    BobRotation();
-        //}
-
-        Sway();
+        SwayOffset();
         SwayRotation();
         BobOffset();
         BobRotation();
@@ -95,12 +87,13 @@ public class WeaponSway : MonoBehaviour
         lookInput.y = Input.GetAxis("Mouse Y");
     }
 
-
-    private void Sway()
+    private void SwayOffset()
     {
         if (sway)
         {
-            Vector3 invertLook = lookInput * -step;
+            float aimingMultiplier = isAiming ? 0.2f : 1.0f; // Reduce effect to some % when aiming
+
+            Vector3 invertLook = lookInput * -step * aimingMultiplier;
             invertLook.x = Mathf.Clamp(invertLook.x, -maxStepDistance, maxStepDistance);
             invertLook.y = Mathf.Clamp(invertLook.y, -maxStepDistance, maxStepDistance);
 
@@ -109,7 +102,6 @@ public class WeaponSway : MonoBehaviour
         else
         {
             swayPos = Vector3.zero;
-            return;
         }
     }
 
@@ -117,7 +109,9 @@ public class WeaponSway : MonoBehaviour
     {
         if (swayRotation)
         {
-            Vector2 invertLook = lookInput * -rotationStep;
+            float aimingMultiplier = isAiming ? 0.2f : 1.0f;
+
+            Vector2 invertLook = lookInput * -rotationStep * aimingMultiplier;
             invertLook.x = Mathf.Clamp(invertLook.x, -maxRotationStep, maxRotationStep);
             invertLook.y = Mathf.Clamp(invertLook.y, -maxRotationStep, maxRotationStep);
             swayEulerRot = new Vector3(invertLook.y, invertLook.x, invertLook.x);
@@ -125,9 +119,9 @@ public class WeaponSway : MonoBehaviour
         else
         {
             swayEulerRot = Vector3.zero;
-            return;
         }
     }
+
 
     private Quaternion externalRotation = Quaternion.identity;
 
@@ -136,21 +130,6 @@ public class WeaponSway : MonoBehaviour
         externalRotation = rotation;
     }
 
-    //private void CompositePositionRotation()
-    //{
-    //    // Calculate sway and bobbing rotation
-    //    Quaternion swayBobRotation = Quaternion.Euler(swayEulerRot + bobEulerRotation);
-
-    //    // Combine the initial rotation with sway/bobbing rotation and external rotation (from prevent clip logic)
-    //    Quaternion combinedRotation = initialLocalRotation * swayBobRotation * externalRotation;
-
-    //    // Apply combined rotation
-    //    transform.localRotation = Quaternion.Slerp(transform.localRotation, combinedRotation, Time.deltaTime * smoothRot);
-
-    //    // Apply position changes
-    //    Vector3 targetPosition = initialLocalPosition + swayPos + bobPosition;
-    //    transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * smooth);
-    //}
 
     private void CompositePositionRotation()
     {
@@ -175,31 +154,23 @@ public class WeaponSway : MonoBehaviour
     {
         if (bobOffset)
         {
-            // Determine the increment rate of speedCurve variable, based on whether the player is moving
             float incrementRate = _player.IsGrounded ? (walkInput.magnitude * bobExaggeration) : 1f;
+            float stationaryIncrement = 0.5f;
 
-            // When the player is not moving, we use a smaller increment for a slower breathing effect
-            float stationaryIncrement = 0.5f; // Adjust this value to control the breathing speed
-            
             bool isWalking = walkInput != Vector2.zero;
-            //float increment = Time.deltaTime * (walkInput != Vector2.zero ? incrementRate : stationaryIncrement) + 0.01f;
-            float increment = Time.deltaTime * ((isWalking && !isAiming) ? incrementRate : stationaryIncrement) + 0.01f;
+            float aimingMultiplier = isAiming ? 0.05f : 1.0f;
 
+            float increment = Time.deltaTime * ((isWalking && !isAiming) ? incrementRate : stationaryIncrement) * aimingMultiplier + 0.01f;
             speedCurve += increment;
 
-            // Wrap speedCurve to prevent it from growing indefinitely
             speedCurve %= 2 * Mathf.PI;
 
-            // Adjust the bobLimit for a more subtle effect when not moving
-            float stationaryBobMultiplier = 0.2f; // Adjust this value to control the breathing amplitude
-            //Vector3 adjustedBobLimit = walkInput != Vector2.zero ? bobLimit : bobLimit * stationaryBobMultiplier;
+            float stationaryBobMultiplier = 0.2f;
             Vector3 adjustedBobLimit = (isWalking && !isAiming) ? bobLimit : bobLimit * stationaryBobMultiplier;
+            adjustedBobLimit *= aimingMultiplier; // Apply reduced effect when aiming
 
-            // Calculate the bob position using the adjusted limits and actual walkInput direction
-            // Negating walkInput values to move in the opposite direction of player movement
             bobPosition.x = (curveCos * adjustedBobLimit.x * (_player.IsGrounded ? 1 : 0)) - (walkInput.x * travelLimit.x);
             bobPosition.y = (curveSin * adjustedBobLimit.y) - (Input.GetAxis("Vertical") * travelLimit.y);
-            //bobPosition.z = curveCos * adjustedBobLimit.z * (_player.IsGrounded ? walkInput.y : 0);
             bobPosition.z = -(walkInput.y * travelLimit.z);
         }
         else
@@ -212,17 +183,13 @@ public class WeaponSway : MonoBehaviour
     {
         if (bobSway)
         {
-            // Slowing down the bob effect when not moving by reducing the multiplier for the x-axis.
-            float pitchMultiplier = (walkInput != Vector2.zero) ? 1f : 0.1f; // Reduced to 10% when not moving
+            float aimingMultiplier = isAiming ? 0.05f : 1.0f;
+            float pitchMultiplier = (walkInput != Vector2.zero) ? 1f : 0.1f;
+            float frequency = (walkInput != Vector2.zero) ? 2f : 0.5f;
 
-            // Using a smaller value for frequency to slow down the sine wave for the breathing effect
-            float frequency = (walkInput != Vector2.zero) ? 2f : 0.5f; // Slower frequency for breathing
-
-            bobEulerRotation.x = multiplier.x * (Mathf.Sin(frequency * speedCurve)) * pitchMultiplier;
-            bobEulerRotation.y = (walkInput != Vector2.zero) ? multiplier.y * curveCos : 0;
-
-            // For the z-axis, you might want to apply similar logic as the x-axis if you want to slow down the roll effect as well.
-            bobEulerRotation.z = (walkInput != Vector2.zero) ? multiplier.z * curveCos * walkInput.x : 0;
+            bobEulerRotation.x = multiplier.x * (Mathf.Sin(frequency * speedCurve)) * pitchMultiplier * aimingMultiplier;
+            bobEulerRotation.y = (walkInput != Vector2.zero) ? multiplier.y * curveCos * aimingMultiplier : 0;
+            bobEulerRotation.z = (walkInput != Vector2.zero) ? multiplier.z * curveCos * walkInput.x * aimingMultiplier : 0;
         }
         else
         {
@@ -230,54 +197,9 @@ public class WeaponSway : MonoBehaviour
         }
     }
 
+
     public void SetAiming(bool aiming)
     {
         isAiming = aiming;
     }
-
-    //PREVIOUSLY WORKING BUT BASIC CODE
-
-    //private void CompositePositionRotation()
-    //{
-    //    // Apply sway and bobbing as offsets to the initial position and rotation
-    //    Vector3 targetPosition = initialLocalPosition + swayPos + bobPosition;
-    //    Quaternion targetRotation = initialLocalRotation * Quaternion.Euler(swayEulerRot + bobEulerRotation) * externalRotation;
-
-    //    transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * smooth);
-    //    transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, Time.deltaTime * smoothRot);
-    //}
-
-
-    //private void BobOffset()
-    //{
-    //    if (bobOffset)
-    //    {
-    //        //speedCurve += Time.deltaTime * (_player.IsGrounded ? (Input.GetAxis("Horizontal") + Input.GetAxis("Vertical")) * bobExaggeration : 1f) + 0.01f;
-    //        speedCurve += Time.deltaTime * (_player.IsGrounded ? (walkInput.x + walkInput.y) * bobExaggeration : 1f) + 0.01f;
-
-    //        bobPosition.x = (curveCos * bobLimit.x * (_player.IsGrounded ? 1 : 0)) - (walkInput.x * travelLimit.x);
-    //        bobPosition.y = (curveSin * bobLimit.y) - (Input.GetAxis("Vertical") * travelLimit.y);
-    //        bobPosition.z = -(walkInput.y * travelLimit.z);
-    //    }
-    //    else
-    //    {
-    //        bobPosition = Vector3.zero;
-    //        return;
-    //    }
-    //}
-
-    //private void BobRotation()
-    //{
-    //    if (bobSway)
-    //    {
-    //        bobEulerRotation.x = (walkInput != Vector2.zero ? multiplier.x * (Mathf.Sin(2 * speedCurve)) : multiplier.x * (Mathf.Sin(2 * speedCurve) / 10));
-    //        bobEulerRotation.y = (walkInput != Vector2.zero ? multiplier.y * curveCos : 0);
-    //        bobEulerRotation.z = (walkInput != Vector2.zero ? multiplier.z * curveCos * walkInput.x : 0);
-    //    }
-    //    else
-    //    {
-    //        bobEulerRotation = Vector3.zero;
-    //        return;
-    //    }
-    //}
 }

@@ -13,6 +13,7 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private Transform groundChecker;
     [SerializeField] private GameObject capsuleCharacter;
     [SerializeField] private GameObject trajectoryLine;
+    [SerializeField] private GameObject sniperScope;
 
     #region Movement
 
@@ -32,6 +33,22 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private float crouchingJumpForce = 6f;
     private float jumpForce;
     private bool wasGroundedLastFrame;
+
+    // Bool to check if player is currently moving.
+    public static bool IsMoving
+    {
+        get
+        {
+            if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 
     [Header("Coyote Time")]
     private float coyoteTimeDuration = 15f / 60f; // A coyote jump timeframe equivalent to 15 frames at 60 FPS
@@ -130,6 +147,8 @@ public class PlayerController_test : MonoBehaviour
     // Easier reference spot for the translocator screen for now
     [SerializeField] private GameObject translocatorScreen;
 
+    private DynamicCrosshair weaponCrosshair;
+
     #endregion
 
     #region WeaponAimZoom
@@ -141,7 +160,7 @@ public class PlayerController_test : MonoBehaviour
     private float defaultFOV;
     private Coroutine zoomRoutine;
 
-    
+
     private Vector3 hitPointNormal;
 
     #endregion
@@ -149,7 +168,7 @@ public class PlayerController_test : MonoBehaviour
     #region WeaponClippingPrevention
 
     [Header("Weapon clipping prevention")]
-    [SerializeField] private GameObject weapon;
+    [SerializeField] private GameObject weaponHolder;
     [SerializeField] private GameObject clipProjector;
     [SerializeField] private float checkDistance;
 
@@ -231,6 +250,7 @@ public class PlayerController_test : MonoBehaviour
         crouchSpeed = walkSpeed * 0.35f;
         trajectoryLine.SetActive(false);
         UI_Manager.OnCrouch(isCrouching);
+        weaponCrosshair = FindObjectOfType<DynamicCrosshair>();
     }
 
     void Update()
@@ -268,7 +288,7 @@ public class PlayerController_test : MonoBehaviour
         if (isGrounded)
         {
             moveSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
-            
+
             // Check if the player has just landed
             if (!wasGroundedLastFrame)
             {
@@ -447,7 +467,7 @@ public class PlayerController_test : MonoBehaviour
 
     private void EnableZoom()
     {
-        weapon.GetComponent<WeaponSway>().SetAiming(true);
+        weaponHolder.GetComponent<WeaponSway>().SetAiming(true);
 
         if (zoomRoutine != null)
         {
@@ -460,7 +480,7 @@ public class PlayerController_test : MonoBehaviour
 
     private void DisableZoom()
     {
-        weapon.GetComponent<WeaponSway>().SetAiming(false);
+        weaponHolder.GetComponent<WeaponSway>().SetAiming(false);
 
         if (zoomRoutine != null)
         {
@@ -491,6 +511,11 @@ public class PlayerController_test : MonoBehaviour
         }
 
         playerCamera.fieldOfView = targetFOV;
+
+        if (currentGun == 1)
+        {
+            sniperScope.SetActive(isEnter);
+        }
 
         zoomRoutine = null;
     }
@@ -595,7 +620,9 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
         {
             delaySinceFiring = 0f;
-            StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed, gunList[currentGun].bulletDelay, gunList[currentGun].bulletPrecision));
+            StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed,
+                                        gunList[currentGun].bulletUpImpusle, gunList[currentGun].bulletDelay,
+                                         gunList[currentGun].bulletPrecision));
         }
     }
 
@@ -604,8 +631,16 @@ public class PlayerController_test : MonoBehaviour
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
 
-        if (currentGun == 2) trajectoryLine.SetActive(true);
-        else trajectoryLine.SetActive(false);
+        if (currentGun == 2)
+        {
+            weaponCrosshair.SetCrosshairVisibility(false);
+            trajectoryLine.SetActive(true);
+        }
+        else
+        {
+            weaponCrosshair.SetCrosshairVisibility(true);
+            trajectoryLine.SetActive(false);
+        }
 
         DisableZoom();
     }
@@ -632,7 +667,7 @@ public class PlayerController_test : MonoBehaviour
         //weapon.transform.localRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(newDirection), lerpPosition);
 
         Quaternion clipRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(noShootingPosition), lerpPosition);
-        weapon.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
+        weaponHolder.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
 
         // Disable shooting if the weapon is rotated significantly
         canShoot = lerpPosition < shootDisablingThreshold;
@@ -646,7 +681,7 @@ public class PlayerController_test : MonoBehaviour
     // Gun class should only handle gun behavior such as firing rate, ammo,
     // number of bullet to instantiate, etc.
     // !!!!!!
-    IEnumerator ShootBullet(int amount, float speed, float delay, float precision)
+    IEnumerator ShootBullet(int amount, float speed, float upImpusle, float delay, float precision)
     {
         audioSource.PlayOneShot(gunList[currentGun].gunSound);
         for (int i = 0; i < amount; i++)
@@ -663,6 +698,7 @@ public class PlayerController_test : MonoBehaviour
             else
             {
                 bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.forward * speed + UnityEngine.Random.insideUnitSphere * precision, ForceMode.Impulse);
+                bulletObject.GetComponent<Rigidbody>().AddForce(bulletObject.transform.up * upImpusle, ForceMode.Impulse);
             }
 
             yield return new WaitForSeconds(delay);
@@ -690,6 +726,7 @@ public class Gun_test
     public int bulletAmount;
     // 20 = slow, 200 = fast
     public float bulletSpeed;
+    public float bulletUpImpusle;
     public float bulletDelay;
     public float gunCooldown;
     // 0 = super precise, 20f = very imprecise

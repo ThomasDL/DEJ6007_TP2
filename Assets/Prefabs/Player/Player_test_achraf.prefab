@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1064952137224680489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.007, y: 0.006, z: 0.823}
+  m_LocalPosition: {x: 0, y: 0, z: 0.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -476,6 +476,7 @@ MonoBehaviour:
   groundChecker: {fileID: 4797186735741915639}
   capsuleCharacter: {fileID: 6356643009802062552}
   trajectoryLine: {fileID: 2305807560913551526}
+  sniperScope: {fileID: 0}
   walkSpeed: 10
   sprintSpeed: 14
   slopeSpeed: 16
@@ -501,11 +502,11 @@ MonoBehaviour:
   sprintBobAmount: 0.2
   crouchBobSpeed: 8
   crouchBobAmount: 0.05
-  timeToZoom: 0.3
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
     bulletSpeed: 40
+    bulletUpImpusle: 1
     bulletDelay: 0.01
     gunCooldown: 0.3
     bulletPrecision: 15
@@ -515,6 +516,7 @@ MonoBehaviour:
   - gunName: Sniper
     bulletAmount: 1
     bulletSpeed: 200
+    bulletUpImpusle: 2
     bulletDelay: 0
     gunCooldown: 0.6
     bulletPrecision: 0
@@ -524,6 +526,7 @@ MonoBehaviour:
   - gunName: Teleporter
     bulletAmount: 1
     bulletSpeed: 32
+    bulletUpImpusle: 1.5
     bulletDelay: 0.01
     gunCooldown: 0.3
     bulletPrecision: 3
@@ -533,6 +536,7 @@ MonoBehaviour:
   - gunName: PlatformCreator
     bulletAmount: 1
     bulletSpeed: 200
+    bulletUpImpusle: 1.75
     bulletDelay: 0.01
     gunCooldown: 0.3
     bulletPrecision: 0
@@ -542,6 +546,7 @@ MonoBehaviour:
   - gunName: ZiplineGun
     bulletAmount: 1
     bulletSpeed: 50
+    bulletUpImpusle: 1
     bulletDelay: 0.01
     gunCooldown: 0.3
     bulletPrecision: 0
@@ -557,7 +562,8 @@ MonoBehaviour:
   gunPoint: {fileID: 2183748090638752308}
   currentGun: 0
   translocatorScreen: {fileID: 7186489846273115849}
-  weapon: {fileID: 7412424657373415461}
+  timeToZoom: 0.3
+  weaponHolder: {fileID: 7412424657373415461}
   clipProjector: {fileID: 3945841803772249842}
   checkDistance: 1
   ignoredLayers:
@@ -1504,7 +1510,7 @@ Camera:
   m_GameObject: {fileID: 6529760798181728788}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -1579,7 +1585,7 @@ GameObject:
   - component: {fileID: 954339599138385832}
   - component: {fileID: 8518883669887645529}
   m_Layer: 10
-  m_Name: Weapon
+  m_Name: WeaponHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1594,7 +1600,7 @@ Transform:
   m_GameObject: {fileID: 7412424657373415461}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.355, y: -0.293, z: 0.613}
+  m_LocalPosition: {x: 0.327, y: -0.255, z: 0.665}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1634,6 +1640,8 @@ MonoBehaviour:
   bobLimit: {x: 0.015, y: 0.008, z: 0.015}
   bobExaggeration: 1
   multiplier: {x: 1.5, y: 1.5, z: 1.5}
+  normalPosition: {x: 0.327, y: -0.255, z: 0.665}
+  aimingPosition: {x: 0, y: -0.32, z: 0.45}
 --- !u!1001 &5285326664597707270
 PrefabInstance:
   m_ObjectHideFlags: 0
