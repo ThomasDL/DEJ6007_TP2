@@ -208,6 +208,8 @@ public class PlayerController_test : MonoBehaviour
     public static Action<float> OnDamage;
     public static Action<float> OnHeal;
 
+    private GameSession gameOverScreen;
+
     #endregion
 
     // Player is a Singleton = easier access to the player instance
@@ -245,12 +247,14 @@ public class PlayerController_test : MonoBehaviour
 
     private void Start()
     {
+        SetPlayerActionsState(true);
         isGrounded = CheckIfGrounded();
         canShoot = true;
         crouchSpeed = walkSpeed * 0.35f;
         trajectoryLine.SetActive(false);
-        UI_Manager.OnCrouch(isCrouching);
+        PlayerUI_Manager.OnCrouch(isCrouching);
         weaponCrosshair = FindObjectOfType<DynamicCrosshair>();
+        gameOverScreen = FindObjectOfType<GameSession>();
     }
 
     void Update()
@@ -409,7 +413,7 @@ public class PlayerController_test : MonoBehaviour
         transform.position = new Vector3(transform.position.x, initialPlayerYPosition + liftAmount, transform.position.z);
 
         isCrouching = !isCrouching;
-        UI_Manager.OnCrouch(isCrouching);
+        PlayerUI_Manager.OnCrouch(isCrouching);
         duringCrouchAnimation = false;
     }
 
@@ -427,13 +431,14 @@ public class PlayerController_test : MonoBehaviour
         }
     }
 
-    private void DisableMovement()
+    private void SetPlayerActionsState(bool state)
     {
-        CanMove = false;
-        canJump = false;
-        canCrouch = false;
-        canZoom = false;
-        canSprint = false;
+        CanMove = state;
+        canJump = state;
+        canCrouch = state;
+        canZoom = state;
+        canSprint = state;
+        canShoot = state;
     }
 
     bool CheckIfGrounded()
@@ -495,6 +500,14 @@ public class PlayerController_test : MonoBehaviour
     {
         float targetFOV = isEnter ? gunList[currentGun].customZoomFOV : defaultFOV;
 
+        if(!isEnter && currentGun == 1)
+        {
+            sniperScope.SetActive(false);
+            //gunObjets[currentGun].GetComponent<MeshRenderer>().enabled = true;
+            gunObjets[currentGun].SetActive(true);
+        }
+
+
         float playerCameraStartingFOV = playerCamera.fieldOfView;
         float weaponCameraStartingFOV = weaponCamera.fieldOfView;
 
@@ -512,9 +525,11 @@ public class PlayerController_test : MonoBehaviour
 
         playerCamera.fieldOfView = targetFOV;
 
-        if (currentGun == 1)
+        if (isEnter && currentGun == 1)
         {
-            sniperScope.SetActive(isEnter);
+            sniperScope.SetActive(true);
+            //gunObjets[currentGun].GetComponent<MeshRenderer>().enabled = false;
+            gunObjets[currentGun].SetActive(false);
         }
 
         zoomRoutine = null;
@@ -557,7 +572,8 @@ public class PlayerController_test : MonoBehaviour
         // Implement what happens when the player dies
 
         // Display death screen with replay button.
-        DisableMovement();
+        SetPlayerActionsState(false);
+        gameOverScreen.DisplayGameOverScreen(true);
         Debug.Log("Dead");
     }
 
