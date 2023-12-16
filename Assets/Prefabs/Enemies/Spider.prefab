@@ -122,7 +122,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   visionPoint: {fileID: 3229205511399591562}
-  visionDistance: 50
+  visionDistance: 35
   bulletPrefab: {fileID: 6720055664682017855, guid: 3dc17d38176c0d348a89d1c3dd82bf5c, type: 3}
   shootingPoint: {fileID: 4225646679157103108}
 --- !u!195 &4841758484541284565

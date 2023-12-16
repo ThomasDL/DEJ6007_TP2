@@ -108,7 +108,7 @@ MonoBehaviour:
   patrolWaypoints:
   - {fileID: 0}
   visionPoint: {fileID: 7096117897549915136}
-  visionDistance: 60
+  visionDistance: 40
   jumpForceParticles: {fileID: 9222842896016326509}
   grenadePrefab: {fileID: 6720055664682017855, guid: b0821818296d2f643977a13e565a4361, type: 3}
   grenadeThrowPoint: {fileID: 6921090340439942806}

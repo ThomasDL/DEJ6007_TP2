@@ -40,6 +40,10 @@ PrefabInstance:
       propertyPath: attackStrength
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 3386873938666691708, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
+      propertyPath: visionDistance
+      value: 45
+      objectReference: {fileID: 0}
     - target: {fileID: 5475929251723042198, guid: df28c4c2fd023ce438a94912cbb2efb9, type: 3}
       propertyPath: m_LocalScale.x
       value: 5

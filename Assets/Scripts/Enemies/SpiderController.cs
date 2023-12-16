@@ -23,7 +23,7 @@ public class SpiderController : EnemyBase
     float nextJumpDelay;
     float jumpRepeatMin = 3f;
     float jumpRepeatMax = 5f;
-    float jumpForce = 150f;
+    float jumpForce = 300f;
     float jumpPrecision = 8f;
     bool isGrounded = true;
 
@@ -53,9 +53,9 @@ public class SpiderController : EnemyBase
                 Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(Vector3.Normalize(player.transform.position - visionPoint.position) * attackForce, ForceMode.Impulse);
             }
         }
-        HandleWalk();
+        SetWalkAnimationSpeed();
     }
-    void HandleWalk()
+    void SetWalkAnimationSpeed()
     {
         previousPosition = currentPosition;
         currentPosition = transform.position;
@@ -66,7 +66,7 @@ public class SpiderController : EnemyBase
     {
         if (enemyState == EnemyState.Attacking && isAlive)
         {
-            RotateTowardsPlayer();
+            RotateBodyTowardsPlayer();
 
             if (timeSinceJumping > nextJumpDelay && isGrounded)
             {
@@ -78,7 +78,7 @@ public class SpiderController : EnemyBase
             }
         }
     }
-    void RotateTowardsPlayer()
+    void RotateBodyTowardsPlayer()
     {
         // Determine the direction to the player
         Vector3 directionToPlayer = player.transform.position - transform.position;
