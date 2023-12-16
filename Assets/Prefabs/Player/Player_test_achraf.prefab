@@ -505,7 +505,7 @@ MonoBehaviour:
   gunList:
   - gunName: ShotGun
     bulletAmount: 10
-    bulletSpeed: 40
+    bulletSpeed: 50
     bulletUpImpusle: 1
     bulletDelay: 0.01
     gunCooldown: 0.3
@@ -515,7 +515,7 @@ MonoBehaviour:
     customZoomFOV: 45
   - gunName: Sniper
     bulletAmount: 1
-    bulletSpeed: 200
+    bulletSpeed: 300
     bulletUpImpusle: 2
     bulletDelay: 0
     gunCooldown: 0.6
@@ -525,8 +525,8 @@ MonoBehaviour:
     customZoomFOV: 20
   - gunName: Teleporter
     bulletAmount: 1
-    bulletSpeed: 32
-    bulletUpImpusle: 1.5
+    bulletSpeed: 80
+    bulletUpImpusle: 2
     bulletDelay: 0.01
     gunCooldown: 0.3
     bulletPrecision: 3
@@ -535,7 +535,7 @@ MonoBehaviour:
     customZoomFOV: 45
   - gunName: PlatformCreator
     bulletAmount: 1
-    bulletSpeed: 200
+    bulletSpeed: 400
     bulletUpImpusle: 1.25
     bulletDelay: 0.01
     gunCooldown: 0.3
@@ -545,7 +545,7 @@ MonoBehaviour:
     customZoomFOV: 40
   - gunName: ZiplineGun
     bulletAmount: 1
-    bulletSpeed: 50
+    bulletSpeed: 100
     bulletUpImpusle: 1
     bulletDelay: 0.01
     gunCooldown: 0.3
@@ -1783,7 +1783,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3590e5fb4d86e0342972a4c1498d4db1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseSensitivity: 2
+  mouseSensitivity: 20
   playerBody: {fileID: 5033980705324155347}
 --- !u!1 &7412424657373415461
 GameObject:
