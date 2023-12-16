@@ -4646,6 +4646,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 3495190233592404619, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
+      propertyPath: mouseSensitivity
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5033980705324155347, guid: 228bc79d0c95f0c43abff4c0b96f207b, type: 3}
       propertyPath: m_LocalPosition.x
       value: -20.98
