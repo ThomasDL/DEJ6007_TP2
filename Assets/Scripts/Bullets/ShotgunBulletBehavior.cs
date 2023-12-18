@@ -5,7 +5,7 @@ using UnityEngine;
 public class ShotgunBulletBehavior : MonoBehaviour
 {
     int collisionCounter;
-    float maxLifeSpan = 0.2f;
+    float maxLifeSpan = 0.3f;
     float lifeSpan = 0f;
 
     private void Start()
