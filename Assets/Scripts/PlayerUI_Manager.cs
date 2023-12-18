@@ -13,7 +13,7 @@ public class PlayerUI_Manager : MonoBehaviour
     #region Health Bar Image
 
     [SerializeField] private Image healthBarForeground;
-    [SerializeField] private float updateFillSpeed = 0.5f;
+    [SerializeField] private float updateFillSpeed = 0.3f;
     [SerializeField] private GameObject redFlashScreen;
     Coroutine redFlashCoroutine;
 
