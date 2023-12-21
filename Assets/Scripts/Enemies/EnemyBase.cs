@@ -21,6 +21,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected int currentPatrolWaypoint;
 
     protected Animator thisAnim;
+    protected AudioSource thisAudioSource;
 
     protected GameObject player;
     public Transform visionPoint;
@@ -35,9 +36,11 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected void Awake()
     {
+        thisAudioSource = GetComponent<AudioSource>();
+        thisAnim = GetComponentInChildren<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         currentHealth = maxHealth;
-        player = GameObject.Find("Player");
+        player = GameObject.Find("Player_test_achraf");
         enemyState = EnemyState.Patrolling;
         navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
     }
@@ -84,6 +87,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected IEnumerator EnemyDies()
     {
         isAlive = false;
+        thisAudioSource.Play();
         navMeshAgent.enabled = false;
         thisAnim.SetTrigger("Dead");
         float timeToDie = 1f;

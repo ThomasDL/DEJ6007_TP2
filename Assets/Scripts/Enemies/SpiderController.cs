@@ -11,19 +11,19 @@ public class SpiderController : EnemyBase
     Rigidbody thisRigidbody;
 
     float checkPlayerRepeatRate = 0.5f;
-    float rotationSpeed = 80f;
+    float rotationSpeed = 100f;
 
     float timeSinceLastAttack;
     float nextAttackDelay;
-    float attackRepeatMin = 0.6f;
-    float attackRepeatMax = 1f;
-    float attackForce = 10f;
+    float attackRepeatMin = 0.5f;
+    float attackRepeatMax = 0.9f;
+    float attackForce = 18f;
 
     float timeSinceJumping;
     float nextJumpDelay;
     float jumpRepeatMin = 3f;
     float jumpRepeatMax = 5f;
-    float jumpForce = 150f;
+    float jumpForce = 300f;
     float jumpPrecision = 8f;
     bool isGrounded = true;
 
@@ -49,12 +49,13 @@ public class SpiderController : EnemyBase
                 timeSinceLastAttack = 0f;
                 nextAttackDelay = Random.Range(attackRepeatMin, attackRepeatMax);
                 thisAnim.SetTrigger("Attack");
+                thisAudioSource.Play();
                 Instantiate(bulletPrefab, shootingPoint.position, Quaternion.identity).GetComponent<Rigidbody>().AddForce(Vector3.Normalize(player.transform.position - visionPoint.position) * attackForce, ForceMode.Impulse);
             }
         }
-        HandleWalk();
+        SetWalkAnimationSpeed();
     }
-    void HandleWalk()
+    void SetWalkAnimationSpeed()
     {
         previousPosition = currentPosition;
         currentPosition = transform.position;
@@ -65,7 +66,7 @@ public class SpiderController : EnemyBase
     {
         if (enemyState == EnemyState.Attacking && isAlive)
         {
-            RotateTowardsPlayer();
+            RotateBodyTowardsPlayer();
 
             if (timeSinceJumping > nextJumpDelay && isGrounded)
             {
@@ -77,7 +78,7 @@ public class SpiderController : EnemyBase
             }
         }
     }
-    void RotateTowardsPlayer()
+    void RotateBodyTowardsPlayer()
     {
         // Determine the direction to the player
         Vector3 directionToPlayer = player.transform.position - transform.position;

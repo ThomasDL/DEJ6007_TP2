@@ -14,19 +14,18 @@ public class BullfrogController : EnemyBase
     bool isAttacking = false;
 
     public Transform grenadeThrowPoint;
-    float strafeJumpForce = 3000f;
-    float grenadeWaitTime = 0.6f;
-    float grenadeThrowForce = 4.6f;
+    float strafeJumpForce = 8000f;
+    float grenadeWaitTime = 0.7f;
+    float grenadeThrowForce = 9.2f;
 
     float jumpStrength = 30f;
-    float jumpForce = 1105000f;
+    float jumpForce = 2210500f;
     float jumpWaitTime = 1f;
     bool isJumping = false;
     float jumpImpactRadius = 12f;
 
     void Start()
     {
-        thisAnim = GetComponentInChildren<Animator>();
         bossRigidbody = GetComponent<Rigidbody>();
         InvokeRepeating("VisionCheck", visionCheckRate, visionCheckRate);
         healthSlider.maxValue = maxHealth;
@@ -34,9 +33,9 @@ public class BullfrogController : EnemyBase
     }
     new void Update()
     {
-        HandleWalk(); 
+        SetWalkAnimationSpeed(); 
     }
-    void HandleWalk()
+    void SetWalkAnimationSpeed()
     {
         previousPosition = currentPosition;
         currentPosition = transform.position;
@@ -45,10 +44,7 @@ public class BullfrogController : EnemyBase
     }
     private void FixedUpdate()
     {
-        if (enemyState == EnemyState.Attacking && isAlive)
-        {
-            RotateTowardsPlayer();
-        }
+        if (enemyState == EnemyState.Attacking && isAlive) RotateBodyTowardsPlayer();
     }
     void InitiateRandomAttack()
     {
@@ -62,7 +58,7 @@ public class BullfrogController : EnemyBase
                 break;
         }
     }
-    void RotateTowardsPlayer()
+    void RotateBodyTowardsPlayer()
     {
         // Determine the direction to the player
         Vector3 directionToPlayer = player.transform.position - transform.position;
@@ -101,21 +97,27 @@ public class BullfrogController : EnemyBase
     }
     void JumpingAttack()
     {
+        // The frog jumps towards the player
         bossRigidbody.velocity = Vector3.zero;
         isAttacking = true;
         float jumpTotal = Mathf.Sqrt(Vector3.Distance(player.transform.position, transform.position) * jumpForce);
         bossRigidbody.AddForce(Vector3.Normalize(player.transform.position - transform.position) * jumpTotal + transform.up * jumpTotal, ForceMode.Impulse);
         isJumping = true;
+        thisAudioSource.Play();
         thisAnim.SetFloat("JumpLength", 4000 / jumpTotal);
         thisAnim.SetTrigger("Jump");
     }
     IEnumerator GrenadeAttack()
     {
+        // First, the frog jumps to the side
         isAttacking = true;
-        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(-1f, 1f) + transform.up * strafeJumpForce, ForceMode.Impulse);
+        bossRigidbody.AddForce(transform.right * strafeJumpForce * Random.Range(0.7f, 1f) * (Random.Range(0,2) == 0 ? -1: 1) + transform.up * strafeJumpForce * 0.5f, ForceMode.Impulse);
         yield return new WaitForSeconds(grenadeWaitTime);
+
+        // Then, it throws a grenade at the player
         if (isAlive)
         {
+            thisAudioSource.Play();
             thisAnim.SetTrigger("Tongue");
             Rigidbody grenadeRb = Instantiate(grenadePrefab, grenadeThrowPoint.position, Quaternion.identity).GetComponent<Rigidbody>();
             grenadeRb.AddForce(Vector3.Normalize(player.transform.position - grenadeThrowPoint.position) * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce) + transform.up * Mathf.Sqrt(Vector3.Distance(player.transform.position, grenadeThrowPoint.position) * grenadeThrowForce), ForceMode.Impulse);
@@ -125,14 +127,16 @@ public class BullfrogController : EnemyBase
     }
     private void OnCollisionEnter(Collision collision)
     {
+        // If the frog hits the ground after jumping, it creates a shockwave that can hurt the player
         if (isJumping && (collision.gameObject.layer == LayerMask.NameToLayer("Ground") || collision.gameObject.CompareTag("Player")) && isAlive)
         {
             isJumping = false;
             jumpForceParticles.Play();
+            jumpForceParticles.gameObject.GetComponent<AudioSource>().Play();
             thisAnim.SetTrigger("Idle");
             if (Vector3.Distance(player.transform.position, transform.position) < jumpImpactRadius)
             {
-                PlayerController_test.OnTakeDamage(jumpStrength);
+                PlayerController_test.OnTakeDamage(jumpStrength + Random.Range(-5, 5));
             }
             StartCoroutine(WaitAfterJump());
         }

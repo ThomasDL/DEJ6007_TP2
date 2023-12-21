@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainScene_Achraf.unity
+    guid: 8938b9442bd08244586d72327bb4da25
   m_configObjects: {}
