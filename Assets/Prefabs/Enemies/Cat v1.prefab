@@ -169,7 +169,7 @@ GameObject:
   - component: {fileID: 5086042476581515467}
   - component: {fileID: 3018093484547634276}
   m_Layer: 8
-  m_Name: Cat
+  m_Name: Cat v1
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
