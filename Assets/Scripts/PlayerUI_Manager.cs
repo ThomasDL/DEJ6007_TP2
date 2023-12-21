@@ -13,7 +13,9 @@ public class PlayerUI_Manager : MonoBehaviour
     #region Health Bar Image
 
     [SerializeField] private Image healthBarForeground;
-    [SerializeField] private float updateFillSpeed = 2.0f;
+    [SerializeField] private float updateFillSpeed = 0.3f;
+    [SerializeField] private GameObject redFlashScreen;
+    Coroutine redFlashCoroutine;
 
     private float targetHealthPercentage = 1.0f;
     private float maxHealth;
@@ -34,6 +36,7 @@ public class PlayerUI_Manager : MonoBehaviour
     {
         PlayerController_test.OnDamage += UpdateHealth;
         PlayerController_test.OnHeal += UpdateHealth;
+        PlayerController_test.OnDamage += TriggerRedFlash;
         OnCrouch += SetBodyPositionActive;
     }
 
@@ -41,6 +44,7 @@ public class PlayerUI_Manager : MonoBehaviour
     {
         PlayerController_test.OnDamage -= UpdateHealth;
         PlayerController_test.OnHeal -= UpdateHealth;
+        PlayerController_test.OnDamage -= TriggerRedFlash;
         OnCrouch -= SetBodyPositionActive;
     }
 
@@ -63,6 +67,20 @@ public class PlayerUI_Manager : MonoBehaviour
     {
         healthText.text = healthAmount.ToString("00");
         targetHealthPercentage = healthAmount / maxHealth;
+    }
+    private void TriggerRedFlash(float healthAmount)
+    {
+        if(redFlashCoroutine == null)
+        {
+            redFlashCoroutine = StartCoroutine(RedFlash());
+        }
+    }
+    IEnumerator RedFlash()
+    {
+        redFlashScreen.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        redFlashScreen.SetActive(false);
+        redFlashCoroutine = null;
     }
 
     private void Update()

@@ -179,7 +179,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4865959323936724256}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.7
   m_Drag: 0.75
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -210,12 +210,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8e4a8279627d064b9baddecaea8a3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  translocatorScreen: {fileID: 0}
   translocatorBulletCamera: {fileID: 2143011906772698487}
   useAsGhost: 0
   groundChecker: {fileID: 2511907512529101648}
   CheckCollisionWithFloor: 0
-  travelTimeDestroy: 3.2
 --- !u!135 &5501100546874985038
 SphereCollider:
   m_ObjectHideFlags: 0
