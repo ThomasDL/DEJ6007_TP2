@@ -144,6 +144,8 @@ public class PlayerController_test : MonoBehaviour
         get { return canShoot; }
     }
 
+    public bool selectingWeapon = false;
+
     // Easier reference spot for the translocator screen for now
     [SerializeField] private GameObject translocatorScreen;
 
@@ -214,7 +216,7 @@ public class PlayerController_test : MonoBehaviour
 
     // Player is a Singleton = easier access to the player instance
     // directly via this static property instead of GameObject.Find()
-    // From other script, use : "player = PlayerController.Instance.gameObject;"
+    // From other script, use : "player = PlayerController_test.Instance.gameObject;"
     public static PlayerController_test Instance { get; private set; }
     // Alternative : GameObject.FindWithTag("Player") is more efficient than GameObject.Find("Player").
 
@@ -255,12 +257,19 @@ public class PlayerController_test : MonoBehaviour
         PlayerUI_Manager.OnCrouch(isCrouching);
         weaponCrosshair = FindObjectOfType<DynamicCrosshair>();
         gameOverScreen = FindObjectOfType<GameSession>();
+        selectingWeapon = false;
     }
 
     void Update()
     {
         // Groundcheck
         isGrounded = CheckIfGrounded();
+
+        PreventClip();
+
+        HandleFiring();
+
+        HandleGunSwitch();
 
         if (CanMove)
         {
@@ -270,12 +279,6 @@ public class PlayerController_test : MonoBehaviour
             if (canUseHeadBob) HandleHeadBob();
             if (canZoom) HandleZoom();
         }
-
-        PreventClip();
-
-        HandleFiring();
-
-        HandleGunSwitch();
 
         wasGroundedLastFrame = isGrounded;
     }
@@ -464,7 +467,7 @@ public class PlayerController_test : MonoBehaviour
             EnableZoom();
         }
 
-        if (Input.GetKeyUp(zoomKey))
+        if (Input.GetKeyUp(zoomKey) || !canShoot || selectingWeapon)
         {
             DisableZoom();
         }
@@ -620,17 +623,30 @@ public class PlayerController_test : MonoBehaviour
     #region Weapon handling methods
     private void HandleGunSwitch()
     {
-        lastGun = currentGun;
         if (Input.GetButtonDown("Gun0")) currentGun = 0;
         if (Input.GetButtonDown("Gun1")) currentGun = 1;
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (Input.GetButtonDown("Gun4")) currentGun = 4;
         if (lastGun != currentGun) SwitchGun(lastGun);
+        lastGun = currentGun;
+        if (lastGun != currentGun) Debug.Log("lastGun = " + lastGun + " et currentGun = " + currentGun);
     }
 
     private void HandleFiring()
     {
+        // Disable shooting if the weapon is rotated significantly
+        if (lerpPosition >= shootDisablingThreshold || selectingWeapon)
+        {
+            canShoot = false;
+        }
+        else if (lerpPosition < shootDisablingThreshold || !selectingWeapon)
+        {
+            canShoot = true;
+        }
+
+        Debug.Log("canShoot = " + canShoot + " et CanShoot = " + CanShoot);
+
         // Shooting code
         delaySinceFiring += Time.deltaTime;
         if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
@@ -668,8 +684,6 @@ public class PlayerController_test : MonoBehaviour
 
         if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
         {
-            DisableZoom();
-
             //Get percentage from 0 to max distance
             lerpPosition = 1 - (hit.distance / checkDistance);
         }
@@ -684,9 +698,6 @@ public class PlayerController_test : MonoBehaviour
 
         Quaternion clipRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(noShootingPosition), lerpPosition);
         weaponHolder.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
-
-        // Disable shooting if the weapon is rotated significantly
-        canShoot = lerpPosition < shootDisablingThreshold;
     }
 
     // !!!!!!

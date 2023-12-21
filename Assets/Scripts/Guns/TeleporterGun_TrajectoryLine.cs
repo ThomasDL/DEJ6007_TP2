@@ -23,7 +23,8 @@ public class TeleporterGun_TrajectoryLine : MonoBehaviour
     private void Start()
     {
         lineRenderer.enabled = false;
-        _playerController = GameObject.Find("Player_test_achraf").GetComponent<PlayerController_test>();
+        //_playerController = GameObject.Find("Player_test_achraf").GetComponent<PlayerController_test>();
+        _playerController = PlayerController_test.Instance;
         gameGravity = new Vector3(0, -10f, 0);
     }
 
