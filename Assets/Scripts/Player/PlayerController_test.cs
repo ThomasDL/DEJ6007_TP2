@@ -9,11 +9,12 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private CharacterController controller;
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera weaponCamera;
-    [SerializeField] private AudioSource audioSource;
     [SerializeField] private Transform groundChecker;
     [SerializeField] private GameObject capsuleCharacter;
     [SerializeField] private GameObject trajectoryLine;
     [SerializeField] private GameObject sniperScope;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] audioClips;
 
     #region Movement
 
@@ -144,6 +145,8 @@ public class PlayerController_test : MonoBehaviour
         get { return canShoot; }
     }
 
+    [HideInInspector] public bool selectingWeapon = false;
+
     // Easier reference spot for the translocator screen for now
     [SerializeField] private GameObject translocatorScreen;
 
@@ -155,6 +158,7 @@ public class PlayerController_test : MonoBehaviour
 
     [Header("Zoom parameters")]
     [SerializeField] private float timeToZoom = 0.3f;
+    private bool startedAiming = false;
 
     // could be moved to a gun variable, so we can have different aiming
     private float defaultFOV;
@@ -214,7 +218,7 @@ public class PlayerController_test : MonoBehaviour
 
     // Player is a Singleton = easier access to the player instance
     // directly via this static property instead of GameObject.Find()
-    // From other script, use : "player = PlayerController.Instance.gameObject;"
+    // From other script, use : "player = PlayerController_test.Instance.gameObject;"
     public static PlayerController_test Instance { get; private set; }
     // Alternative : GameObject.FindWithTag("Player") is more efficient than GameObject.Find("Player").
 
@@ -255,12 +259,20 @@ public class PlayerController_test : MonoBehaviour
         PlayerUI_Manager.OnCrouch(isCrouching);
         weaponCrosshair = FindObjectOfType<DynamicCrosshair>();
         gameOverScreen = FindObjectOfType<GameSession>();
+        selectingWeapon = false;
+        audioSource.pitch = 1f;
     }
 
     void Update()
     {
         // Groundcheck
         isGrounded = CheckIfGrounded();
+
+        PreventClip();
+
+        HandleFiring();
+
+        HandleGunSwitch();
 
         if (CanMove)
         {
@@ -271,11 +283,14 @@ public class PlayerController_test : MonoBehaviour
             if (canZoom) HandleZoom();
         }
 
-        PreventClip();
-
-        HandleFiring();
-
-        HandleGunSwitch();
+        if (!canShoot || currentGun == 2)
+        {
+            weaponCrosshair.SetCrosshairVisibility(false);
+        }
+        else
+        {
+            weaponCrosshair.SetCrosshairVisibility(true);
+        }
 
         wasGroundedLastFrame = isGrounded;
     }
@@ -461,19 +476,19 @@ public class PlayerController_test : MonoBehaviour
     {
         if (Input.GetKeyDown(zoomKey) && canShoot)
         {
+            startedAiming = true;
             EnableZoom();
         }
 
-        if (Input.GetKeyUp(zoomKey))
+        if (startedAiming && (Input.GetKeyUp(zoomKey) || !canShoot || selectingWeapon || lastGun != currentGun))
         {
+            startedAiming = false;
             DisableZoom();
         }
     }
 
     private void EnableZoom()
     {
-        weaponHolder.GetComponent<WeaponSway>().SetAiming(true);
-
         if (zoomRoutine != null)
         {
             StopCoroutine(zoomRoutine);
@@ -481,12 +496,11 @@ public class PlayerController_test : MonoBehaviour
         }
 
         zoomRoutine = StartCoroutine(ToggleZoom(true));
+        weaponHolder.GetComponent<WeaponSway>().SetAiming(true);
     }
 
     private void DisableZoom()
     {
-        weaponHolder.GetComponent<WeaponSway>().SetAiming(false);
-
         if (zoomRoutine != null)
         {
             StopCoroutine(zoomRoutine);
@@ -494,6 +508,7 @@ public class PlayerController_test : MonoBehaviour
         }
 
         zoomRoutine = StartCoroutine(ToggleZoom(false));
+        weaponHolder.GetComponent<WeaponSway>().SetAiming(false);
     }
 
     private IEnumerator ToggleZoom(bool isEnter)
@@ -524,11 +539,11 @@ public class PlayerController_test : MonoBehaviour
         }
 
         playerCamera.fieldOfView = targetFOV;
+        weaponCamera.fieldOfView = targetFOV;
 
         if (isEnter && currentGun == 1)
         {
             sniperScope.SetActive(true);
-            //gunObjets[currentGun].GetComponent<MeshRenderer>().enabled = false;
             gunObjets[currentGun].SetActive(false);
         }
 
@@ -541,9 +556,11 @@ public class PlayerController_test : MonoBehaviour
     private void ApplyDamage(float damage)
     {
         currentHealth -= damage;
+        audioSource.pitch = UnityEngine.Random.Range(0.95f, 1.35f);
+        audioSource.PlayOneShot(audioClips[0]);
 
-        // (if not null "?") Invokes this event to notify other systems
-        // (like UI) that are subscribed to this event of the health change.
+        // (if not null "?") Invokes this event to notify other systems (like UI)
+        // that are subscribed to this event.
         OnDamage?.Invoke(currentHealth);
 
         if (currentHealth <= 0)
@@ -562,6 +579,9 @@ public class PlayerController_test : MonoBehaviour
     private void KillPlayer()
     {
         currentHealth = 0;
+        audioSource.PlayOneShot(audioClips[1]);
+        audioSource.pitch = 0.25f;
+        audioSource.PlayOneShot(audioClips[0]);
         OnDamage?.Invoke(currentHealth);
 
         // Stops health regen if the player is dead.
@@ -620,19 +640,32 @@ public class PlayerController_test : MonoBehaviour
     #region Weapon handling methods
     private void HandleGunSwitch()
     {
-        lastGun = currentGun;
         if (Input.GetButtonDown("Gun0")) currentGun = 0;
         if (Input.GetButtonDown("Gun1")) currentGun = 1;
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (Input.GetButtonDown("Gun4")) currentGun = 4;
         if (lastGun != currentGun) SwitchGun(lastGun);
+        lastGun = currentGun;
     }
 
     private void HandleFiring()
     {
+        // Disable shooting if the weapon is rotated significantly
+        if (lerpPosition >= shootDisablingThreshold || selectingWeapon)
+        {
+            weaponCrosshair.SetCrosshairVisibility(false);
+            canShoot = false;
+        }
+        else if (lerpPosition < shootDisablingThreshold || !selectingWeapon)
+        {
+            weaponCrosshair.SetCrosshairVisibility(false);
+            canShoot = true;
+        }
+
         // Shooting code
         delaySinceFiring += Time.deltaTime;
+
         if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
         {
             delaySinceFiring = 0f;
@@ -647,16 +680,16 @@ public class PlayerController_test : MonoBehaviour
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
 
-        if (currentGun == 2)
+        if (currentGun != 2 || (currentGun == 2 && startedAiming))
         {
-            weaponCrosshair.SetCrosshairVisibility(false);
-            trajectoryLine.SetActive(true);
+            trajectoryLine.SetActive(false);
         }
         else
         {
-            weaponCrosshair.SetCrosshairVisibility(true);
-            trajectoryLine.SetActive(false);
+            trajectoryLine.SetActive(true);
         }
+
+        if (currentGun != 1 && sniperScope.activeSelf) sniperScope.SetActive(false);
 
         DisableZoom();
     }
@@ -668,8 +701,6 @@ public class PlayerController_test : MonoBehaviour
 
         if (Physics.Raycast(clipProjector.transform.position, clipProjector.transform.forward, out hit, checkDistance, layerMaskToIgnore))
         {
-            DisableZoom();
-
             //Get percentage from 0 to max distance
             lerpPosition = 1 - (hit.distance / checkDistance);
         }
@@ -684,9 +715,6 @@ public class PlayerController_test : MonoBehaviour
 
         Quaternion clipRotation = Quaternion.Lerp(Quaternion.Euler(Vector3.zero), Quaternion.Euler(noShootingPosition), lerpPosition);
         weaponHolder.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
-
-        // Disable shooting if the weapon is rotated significantly
-        canShoot = lerpPosition < shootDisablingThreshold;
     }
 
     // !!!!!!
@@ -707,7 +735,6 @@ public class PlayerController_test : MonoBehaviour
             // Special behavior for Teleporter Gun
             if (currentGun == 2)
             {
-                Debug.Log("Shooting TP Bullet");
                 bulletObject.GetComponent<TeleporterBulletBehavior_test>().GetTranslocatorScreenReference(translocatorScreen);
                 bulletObject.GetComponent<TeleporterBulletBehavior_test>().Shoot_TP_Bullet();
             }

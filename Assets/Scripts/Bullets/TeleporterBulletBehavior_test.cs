@@ -49,7 +49,8 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     private void Start()
     {
         //Caching a reference to the CharacterController instead of doing it for each collision in the update
-        _characterController_Unity = GameObject.Find("Player_test_achraf").GetComponent<CharacterController>();
+        //_characterController_Unity = GameObject.Find("Player_test_achraf").GetComponent<CharacterController>();
+        _characterController_Unity = PlayerController_test.Instance.GetComponent<CharacterController>();
         //Shoot_TP_Bullet();
     }
 
