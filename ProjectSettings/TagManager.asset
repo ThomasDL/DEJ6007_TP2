@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Cheese
   - Head
+  - Grenade
   layers:
   - Default
   - TransparentFX
