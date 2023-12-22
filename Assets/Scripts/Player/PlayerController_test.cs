@@ -153,6 +153,9 @@ public class PlayerController_test : MonoBehaviour
 
     private DynamicCrosshair weaponCrosshair;
 
+    public delegate void OnGunChanged(int gunID);
+    public static event OnGunChanged onGunChanged;
+
     #endregion
 
     #region WeaponAimZoom
@@ -651,7 +654,11 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (Input.GetButtonDown("Gun4")) currentGun = 4;
-        if (lastGun != currentGun) SwitchGun(lastGun);
+        if (lastGun != currentGun) 
+        {
+            SwitchGun(lastGun);
+            onGunChanged?.Invoke(currentGun);
+        } 
         lastGun = currentGun;
     }
 
@@ -677,7 +684,7 @@ public class PlayerController_test : MonoBehaviour
         // Shooting code
         delaySinceFiring += Time.deltaTime;
 
-        if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown)
+        if (Input.GetButtonDown("Fire1") && canShoot && delaySinceFiring > gunList[currentGun].gunCooldown && Cursor.lockState == CursorLockMode.Locked)
         {
             delaySinceFiring = 0f;
             StartCoroutine(ShootBullet(gunList[currentGun].bulletAmount, gunList[currentGun].bulletSpeed,

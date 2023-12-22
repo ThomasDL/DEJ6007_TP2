@@ -23,8 +23,8 @@ public class PlayerUI_Manager : MonoBehaviour
 
     #endregion
 
-    #region Controls
-    [SerializeField] private Image controlsImage;
+    #region Menu
+    [SerializeField] private MenuPanelManager menuPanelManager;
     #endregion
 
     #region Body Position
@@ -58,8 +58,6 @@ public class PlayerUI_Manager : MonoBehaviour
 
         UpdateHealth(maxHealth);
 
-        // Setting the UI active
-        controlsImage.gameObject.SetActive(false);
         //bodyPositionImage.enabled = _player.IsCrouching;
     }
 
@@ -89,9 +87,9 @@ public class PlayerUI_Manager : MonoBehaviour
         healthBarForeground.fillAmount = Mathf.Lerp(healthBarForeground.fillAmount, targetHealthPercentage, updateFillSpeed * Time.deltaTime);
 
         //Enable or disabled input controls information
-        if(Input.GetKeyDown(KeyCode.O))
+        if(Input.GetKeyDown(KeyCode.M))
         {
-            controlsImage.gameObject.SetActive(!controlsImage.gameObject.activeInHierarchy);
+            menuPanelManager.OpenMenu();
         }
 
         if (_player.IsCrouching)
