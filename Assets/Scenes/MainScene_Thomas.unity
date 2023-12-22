@@ -1696,6 +1696,30 @@ PrefabInstance:
       propertyPath: playerController
       value: 
       objectReference: {fileID: 1699251978}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827116224345535515, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827116224345535515, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827116224345535515, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

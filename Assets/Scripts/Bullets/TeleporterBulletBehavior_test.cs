@@ -5,11 +5,10 @@ using UnityEngine;
 public class TeleporterBulletBehavior_test : MonoBehaviour
 {
     private CharacterController _characterController_Unity;
+    private PlayerController_test _playerController;
 
     private GameObject translocatorScreen;
     [SerializeField] private Camera translocatorBulletCamera;
-
-    [SerializeField] private bool useAsGhost;
 
     private float _bulletSpeed = 32f;
     private Rigidbody _bullet_rb;
@@ -25,23 +24,19 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     [HideInInspector] public bool CheckCollisionWithFloor = false;
 
     //[SerializeField] private float travelTimeDestroy = 1.5f;
-    
+
     //A single teleportBullet should exist at all time
     public static TeleporterBulletBehavior_test Instance;
 
 
     private void Awake()
     {
-        //Only used in the real scene, not the physics simulation scene
-        if (!useAsGhost)
+        if (Instance != null)
         {
-            if (Instance != null)
-            {
-                Destroy(Instance.gameObject); // Destroy the older instance
-            }
-
-            Instance = this; // Set the current instance as the Singleton instance
+            Destroy(Instance.gameObject); // Destroy the older instance
         }
+
+        Instance = this; // Set the current instance as the Singleton instance
 
         _bullet_rb = GetComponent<Rigidbody>();
     }
@@ -49,7 +44,9 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
     private void Start()
     {
         //Caching a reference to the CharacterController instead of doing it for each collision in the update
-        _characterController_Unity = GameObject.Find("Player_test_achraf").GetComponent<CharacterController>();
+        //_characterController_Unity = GameObject.Find("Player_test_achraf").GetComponent<CharacterController>();
+        _characterController_Unity = PlayerController_test.Instance.GetComponent<CharacterController>();
+        _playerController = PlayerController_test.Instance;
         //Shoot_TP_Bullet();
     }
 
@@ -66,12 +63,30 @@ public class TeleporterBulletBehavior_test : MonoBehaviour
 
     private void TranslocatePlayer()
     {
-        if (Physics.CheckSphere(groundChecker.position, groundCheckRadius, LayerMask.GetMask("Ground")) && !useAsGhost)
+        if (Physics.CheckSphere(groundChecker.position, groundCheckRadius, LayerMask.GetMask("Ground")))
         {
-            translocatorScreen.SetActive(false);
-            _characterController_Unity.enabled = false;
-            _characterController_Unity.transform.position = groundChecker.position + new Vector3(0, _characterController_Unity.height / 2, 0);
-            _characterController_Unity.enabled = true;
+
+            if (_playerController.IsCrouching && Physics.Raycast(transform.position, Vector3.up, _playerController.CrouchHeight))
+            {
+                _playerController.PlaySoundOnPlayer(2, 2f);
+                Debug.Log("Can't teleport player (crouching) : not enough height.");
+                Destroy(gameObject);
+            }
+
+            else if (!_playerController.IsCrouching && Physics.Raycast(transform.position, Vector3.up, _playerController.StandingHeight))
+            {
+                _playerController.PlaySoundOnPlayer(2, 2f);
+                Debug.Log("Can't teleport player (standing) : not enough height.");
+                Destroy(gameObject);
+            }
+
+            else
+            {
+                translocatorScreen.SetActive(false);
+                _characterController_Unity.enabled = false;
+                _characterController_Unity.transform.position = groundChecker.position + new Vector3(0, _characterController_Unity.height / 2, 0);
+                _characterController_Unity.enabled = true;
+            }
             Destroy(gameObject);
         }
         /*
