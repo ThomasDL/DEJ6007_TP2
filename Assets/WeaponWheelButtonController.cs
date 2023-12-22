@@ -12,6 +12,7 @@ public class WeaponWheelButtonController : MonoBehaviour
     [SerializeField] private Image selectedItem;
     private bool selected = false;
     [SerializeField] private Sprite icon;
+    [SerializeField] private AudioClip buttonSelected;
 
     private PlayerController_test _playerController;
 
@@ -29,30 +30,29 @@ public class WeaponWheelButtonController : MonoBehaviour
 
     public void Selected()
     {
-        selected = true;
-        //lastSelectedWeapon_Id = id;
-        _playerController.currentGun = id;
+        //selected = true;
+        //_playerController.currentGun = id;
     }
 
     public void Deselected()
     {
         selected = false;
-        //WeaponWheelController.weaponId = lastSelectedWeapon_Id;
     }
 
     public void HoverEnter()
     {
-        //selected = true;
-        //lastSelectedWeapon_Id = id;
+        _playerController.GetComponent<AudioSource>().PlayOneShot(buttonSelected);
+        selected = true;
+        _playerController.currentGun = id;
 
         anim.SetBool("Hover", true);
         itemText.text = itemName;
 
-        //_playerController.SwitchGun(lastSelectedWeapon_Id);
     }
 
     public void HoverExit()
     {
+        selected = false;
         anim.SetBool("Hover", false);
         itemText.text = "";
     }
@@ -63,7 +63,6 @@ public class WeaponWheelButtonController : MonoBehaviour
         {
             selectedItem.sprite = icon;
             selectedItem.SetNativeSize();
-            itemText.text = itemName;
         }
     }
 }

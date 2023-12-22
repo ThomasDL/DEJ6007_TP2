@@ -4,9 +4,35 @@ using UnityEngine;
 
 public class PlatformCreatorBulletBehavior : MonoBehaviour
 {
+    //SPHERE VERSION
+    //public GameObject platformSpherePrefab;
+
+    //private void OnCollisionEnter(Collision collision)
+    //{
+    //    if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
+    //    {
+    //        ContactPoint contact = collision.contacts[0];
+    //        Vector3 contactPoint = contact.point;
+    //        Vector3 contactNormal = contact.normal.normalized;
+
+    //        // Calculate the overlap adjustment, slightly less than half the diameter to ensure overlap
+    //        float overlapAdjustment = platformSpherePrefab.transform.localScale.x * 0.49f;
+
+    //        // Calculate the adjusted position for the platform sphere
+    //        Vector3 adjustedPosition = contactPoint + (contactNormal * overlapAdjustment);
+
+    //        // Instantiate the platform sphere with adjusted position
+    //        Instantiate(platformSpherePrefab, adjustedPosition, Quaternion.identity);
+
+    //        // Destroy the bullet
+    //        Destroy(gameObject);
+    //    }
+    //}
+
+    //CUBE VERSION
+    //BEST VERSION YET
     public GameObject platformCubePrefab;
 
-    //BEST VERSION YET
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))

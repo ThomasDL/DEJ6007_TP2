@@ -6,7 +6,7 @@ public class WeaponWheelController : MonoBehaviour
     [SerializeField] private Animator anim;
     private bool weaponWheelSelected;
     public static int weaponId;
-
+    [SerializeField] private AudioClip wheelBeep;
 
     private PlayerController_test _playerController;
 
@@ -20,6 +20,7 @@ public class WeaponWheelController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
+            _playerController.GetComponent<AudioSource>().PlayOneShot(wheelBeep);
             _playerController.selectingWeapon = true;
 
             Cursor.lockState = CursorLockMode.None;
@@ -27,6 +28,7 @@ public class WeaponWheelController : MonoBehaviour
         }
         if (Input.GetKeyUp(KeyCode.Tab))
         {
+            _playerController.GetComponent<AudioSource>().PlayOneShot(wheelBeep);
             _playerController.selectingWeapon = false;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
