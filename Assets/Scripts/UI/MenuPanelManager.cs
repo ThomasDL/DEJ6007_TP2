@@ -7,30 +7,32 @@ public class MenuPanelManager : MonoBehaviour
 {
     [SerializeField] GameObject menuObject;
     [SerializeField] TextMeshProUGUI sensitivityValueText;
-    // Start is called before the first frame update
-    void Start()
+
+    bool isOpen = true;
+
+    private void Start()
     {
-        Time.timeScale = 0f;
+        Time.timeScale = 0.01f;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    public void ResumeGame()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        menuObject.SetActive(false);
-        Time.timeScale = 1f;
-    }
     public void OpenMenu()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        menuObject.SetActive(true);
-        Time.timeScale = 0f;
+        if(isOpen)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            menuObject.SetActive(false);
+            isOpen = false;
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            menuObject.SetActive(true);
+            isOpen = true;
+            Time.timeScale = 0.01f;
+        }
     }
     public void SensitivityChange(float newSensitivity)
     {
