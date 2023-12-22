@@ -9,6 +9,7 @@ TagManager:
   - Cheese
   - Head
   - Grenade
+  - Cheese_heal
   layers:
   - Default
   - TransparentFX
@@ -21,9 +22,9 @@ TagManager:
   - Enemies
   - Bullet
   - Gun
-  - 
-  - 
-  - 
+  - Rope_anchor_point
+  - Zipline
+  - Cheese
   - 
   - 
   - 
