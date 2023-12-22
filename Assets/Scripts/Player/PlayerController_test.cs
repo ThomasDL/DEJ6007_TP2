@@ -768,8 +768,6 @@ public class PlayerController_test : MonoBehaviour
 
     #endregion
 
-
-
     #region Helper / debug functions
     void OnDrawGizmosSelected()
     {

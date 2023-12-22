@@ -10,6 +10,8 @@ public class PlayerUI_Manager : MonoBehaviour
     private PlayerController_test _player;
     [SerializeField] private TextMeshProUGUI healthText = default;
 
+    private bool menuOpened = false;
+
     #region Health Bar Image
 
     [SerializeField] private Image healthBarForeground;
@@ -89,7 +91,16 @@ public class PlayerUI_Manager : MonoBehaviour
         //Enable or disabled input controls information
         if(Input.GetKeyDown(KeyCode.M))
         {
-            menuPanelManager.OpenMenu();
+            if(!menuOpened)
+            {
+                menuOpened = true;
+                menuPanelManager.OpenMenu();
+            }
+            else
+            {
+                menuOpened = false;
+                menuPanelManager.ResumeGame();
+            }
         }
 
         if (_player.IsCrouching)
