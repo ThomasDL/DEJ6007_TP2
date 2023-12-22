@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.38940284, g: 0.4037968, b: 0.39348856, a: 1}
+  m_IndirectSpecularColor: {r: 0.38937172, g: 0.4037539, b: 0.39342067, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2599,6 +2599,26 @@ PrefabInstance:
       propertyPath: playerController
       value: 
       objectReference: {fileID: 786104794}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5160644147072602875, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827116224345535515, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827116224345535515, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7847657248535021247, guid: e2e2598f73ccf6f4d98b7a781874d5c3, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -3513,7 +3533,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 5b6d5d8f8d46af542830226d269708d4, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 8801353d4f7591043aaa077aa5ff25a5, type: 2}
   m_BuildHeightMesh: 0
 --- !u!4 &1111906055
 Transform:
@@ -3559,7 +3579,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.26666668
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: a2eee29fe7a99dd48aff71d9984d2ce5, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 0aef3268aa6a1cc478d7225a3d3966ad, type: 2}
   m_BuildHeightMesh: 0
 --- !u!114 &1111906057
 MonoBehaviour:
@@ -3590,7 +3610,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.4
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 3985fe890a4ea3240ae282a5b5d1b886, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: cc076c3f469b8ea48be51b36bd5226f6, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &1217161952
 GameObject:
@@ -3958,9 +3978,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1773602528460829590, guid: aef344cd01500794eaa900682d5cab89, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -81.4
+      objectReference: {fileID: 0}
     - target: {fileID: 6779832138671018473, guid: aef344cd01500794eaa900682d5cab89, type: 3}
       propertyPath: m_Name
       value: Cat v2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7950180607459393610, guid: aef344cd01500794eaa900682d5cab89, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -18.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 7950180607459393610, guid: aef344cd01500794eaa900682d5cab89, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 32.75
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

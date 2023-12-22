@@ -49,7 +49,7 @@ public abstract class EnemyBase : MonoBehaviour
         timeSincePlayerWasSeen += Time.deltaTime;
         if (enemyState == EnemyState.Patrolling && isAlive)
         {
-            if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.2f)
+            if (Vector3.Distance(patrolWaypoints[currentPatrolWaypoint].position, transform.position) < 0.4f)
             {
                 currentPatrolWaypoint = (currentPatrolWaypoint + 1) % patrolWaypoints.Length;
                 navMeshAgent.SetDestination(patrolWaypoints[currentPatrolWaypoint].position);
