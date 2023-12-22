@@ -17,7 +17,9 @@ public class PlayerUI_Manager : MonoBehaviour
     [SerializeField] private Image healthBarForeground;
     [SerializeField] private float updateFillSpeed = 0.3f;
     [SerializeField] private GameObject redFlashScreen;
+    [SerializeField] private GameObject greenFlashScreen;
     Coroutine redFlashCoroutine;
+    Coroutine greenFlashCoroutine;
 
     private float targetHealthPercentage = 1.0f;
     private float maxHealth;
@@ -81,6 +83,21 @@ public class PlayerUI_Manager : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         redFlashScreen.SetActive(false);
         redFlashCoroutine = null;
+    }
+
+    public void TriggerGreenFlash()
+    {
+        if (greenFlashCoroutine == null)
+        {
+            greenFlashCoroutine = StartCoroutine(GreenFlash());
+        }
+    }
+    IEnumerator GreenFlash()
+    {
+        greenFlashScreen.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        greenFlashScreen.SetActive(false);
+        greenFlashCoroutine = null;
     }
 
     private void Update()

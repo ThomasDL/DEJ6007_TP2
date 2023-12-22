@@ -41,6 +41,9 @@ public class DynamicCrosshair : MonoBehaviour
     // Public method to enable or disable the crosshair.
     public void SetCrosshairVisibility(bool isVisible)
     {
-        crosshair.gameObject.SetActive(isVisible);
+        if (crosshair.gameObject.activeSelf)
+        {
+            crosshair.gameObject.SetActive(isVisible);
+        }
     }
 }
