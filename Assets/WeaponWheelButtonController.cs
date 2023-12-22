@@ -65,4 +65,20 @@ public class WeaponWheelButtonController : MonoBehaviour
             selectedItem.SetNativeSize();
         }
     }
+    private void OnEnable()
+    {
+        PlayerController_test.onGunChanged += PlayerController_test_onGunChanged;
+    }
+    private void OnDisable()
+    {
+        PlayerController_test.onGunChanged -= PlayerController_test_onGunChanged;
+    }
+    private void PlayerController_test_onGunChanged(int gunID)
+    {
+        if (gunID == id)
+        {
+            selectedItem.sprite = icon;
+            selectedItem.SetNativeSize();
+        }
+    }
 }

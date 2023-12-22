@@ -3801,17 +3801,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 998266769336337654}
     m_Modifications:
+    - target: {fileID: 211899311582403060, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 211899311582403060, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 211899311582403060, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3022227005723459348, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3022227005723459348, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3022227005723459348, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4818802872228153899, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
       propertyPath: m_Name
       value: Player_UI_Canvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 5293702050517033826, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 162.85715
-      objectReference: {fileID: 0}
-    - target: {fileID: 5293702050517033826, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 57.5
       objectReference: {fileID: 0}
     - target: {fileID: 5795307929708534395, guid: 8240665bbcd7818428ff12dcc83734a6, type: 3}
       propertyPath: m_Pivot.x
