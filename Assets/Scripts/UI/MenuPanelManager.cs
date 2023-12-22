@@ -10,6 +10,11 @@ public class MenuPanelManager : MonoBehaviour
 
     bool isOpen = true;
 
+    private void Start()
+    {
+        Time.timeScale = 0.01f;
+    }
+
     public void OpenMenu()
     {
         if(isOpen)
@@ -18,6 +23,7 @@ public class MenuPanelManager : MonoBehaviour
             Cursor.visible = false;
             menuObject.SetActive(false);
             isOpen = false;
+            Time.timeScale = 1f;
         }
         else
         {
@@ -25,6 +31,7 @@ public class MenuPanelManager : MonoBehaviour
             Cursor.visible = true;
             menuObject.SetActive(true);
             isOpen = true;
+            Time.timeScale = 0.01f;
         }
     }
     public void SensitivityChange(float newSensitivity)
