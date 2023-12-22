@@ -97,6 +97,7 @@ public class PlayerController_test : MonoBehaviour
     }
 
     public float CrouchHeight { get { return crouchHeight; } }
+    public float StandingHeight { get { return standingHeight; } }
 
     private bool duringCrouchAnimation = false;
     private KeyCode crouchKey = KeyCode.LeftControl; // Key for crouching
@@ -522,6 +523,11 @@ public class PlayerController_test : MonoBehaviour
             gunObjets[currentGun].SetActive(true);
         }
 
+        if (currentGun == 2)
+        {
+            trajectoryLine.SetActive(!isEnter);
+        }
+
 
         float playerCameraStartingFOV = playerCamera.fieldOfView;
         float weaponCameraStartingFOV = weaponCamera.fieldOfView;
@@ -649,6 +655,11 @@ public class PlayerController_test : MonoBehaviour
         lastGun = currentGun;
     }
 
+    public void PlaySoundOnPlayer(int audioClipNumber, float volumeScale)
+    {
+        audioSource.PlayOneShot(audioClips[audioClipNumber], volumeScale);
+    }
+
     private void HandleFiring()
     {
         // Disable shooting if the weapon is rotated significantly
@@ -680,7 +691,7 @@ public class PlayerController_test : MonoBehaviour
         gunObjets[lastGun].SetActive(false);
         gunObjets[currentGun].SetActive(true);
 
-        if (currentGun != 2 || (currentGun == 2 && startedAiming))
+        if (currentGun != 2)
         {
             trajectoryLine.SetActive(false);
         }

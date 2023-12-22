@@ -6,6 +6,15 @@ public class SniperBulletBehavior : MonoBehaviour
 {
     int headshotDamage = 12;
     int normalDamage = 5;
+
+
+    private PlayerController_test _playerController;
+
+    private void Start()
+    {
+        _playerController = PlayerController_test.Instance;
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.CompareTag("Head"))
@@ -13,8 +22,10 @@ public class SniperBulletBehavior : MonoBehaviour
             collision.collider.GetComponentInParent<EnemyBase>().DamageEnemy(headshotDamage + Random.Range(-1,1));
             Destroy(gameObject);
         }
-        else if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Enemies")) 
+        else if (collision.collider.gameObject.layer == LayerMask.NameToLayer("Enemies"))
         {
+            _playerController.PlaySoundOnPlayer(3, 2f);
+            Debug.Log("Sniper hit !");
             collision.collider.GetComponentInParent<EnemyBase>().DamageEnemy(normalDamage + Random.Range(-1, 1));
             Destroy(gameObject);
         } 
