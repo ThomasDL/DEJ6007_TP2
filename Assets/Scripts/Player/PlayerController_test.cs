@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using TMPro;
 
 public class PlayerController_test : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PlayerController_test : MonoBehaviour
     [SerializeField] private GameObject sniperScope;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip[] audioClips;
+    [SerializeField] private GameObject congratulationScreen;
 
     #region Movement
 
@@ -127,7 +129,6 @@ public class PlayerController_test : MonoBehaviour
 
     #endregion
 
-
     #region Weapons
 
     [Header("Weapons parameters")]
@@ -220,6 +221,16 @@ public class PlayerController_test : MonoBehaviour
 
     #endregion
 
+    #region Pickups
+
+    [Header("Pickups")]
+    [SerializeField] private TextMeshProUGUI Objective_counter_text;
+    private int collectedCheese;
+    private bool objectiveCompleted = false;
+    private PlayerUI_Manager _playerUI_Manager;
+
+    #endregion
+
     // Player is a Singleton = easier access to the player instance
     // directly via this static property instead of GameObject.Find()
     // From other script, use : "player = PlayerController_test.Instance.gameObject;"
@@ -265,6 +276,9 @@ public class PlayerController_test : MonoBehaviour
         gameOverScreen = FindObjectOfType<GameSession>();
         selectingWeapon = false;
         audioSource.pitch = 1f;
+        collectedCheese = 0;
+        objectiveCompleted = false;
+        _playerUI_Manager = FindObjectOfType<PlayerUI_Manager>();
     }
 
     void Update()
@@ -297,6 +311,26 @@ public class PlayerController_test : MonoBehaviour
         }
 
         wasGroundedLastFrame = isGrounded;
+
+        if (collectedCheese > 3 && !objectiveCompleted)
+        {
+            objectiveCompleted = true;
+            weaponHolder.GetComponent<WeaponSway>().enabled = false;
+            StartCoroutine(DisplayWinScreen());
+        }
+    }
+
+    private IEnumerator DisplayWinScreen()
+    {
+        yield return new WaitForSeconds(0.3f);
+
+
+        SetPlayerActionsState(false);
+        congratulationScreen.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        PlaySoundOnPlayer(5, 1f);
+        StopCoroutine(DisplayWinScreen());
     }
 
     #region Movement methods
@@ -519,7 +553,7 @@ public class PlayerController_test : MonoBehaviour
     {
         float targetFOV = isEnter ? gunList[currentGun].customZoomFOV : defaultFOV;
 
-        if(!isEnter && currentGun == 1)
+        if (!isEnter && currentGun == 1)
         {
             sniperScope.SetActive(false);
             //gunObjets[currentGun].GetComponent<MeshRenderer>().enabled = true;
@@ -654,11 +688,11 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
         if (Input.GetButtonDown("Gun4")) currentGun = 4;
-        if (lastGun != currentGun) 
+        if (lastGun != currentGun)
         {
             SwitchGun(lastGun);
             onGunChanged?.Invoke(currentGun);
-        } 
+        }
         lastGun = currentGun;
     }
 
@@ -735,14 +769,6 @@ public class PlayerController_test : MonoBehaviour
         weaponHolder.GetComponent<WeaponSway>().ApplyExternalRotation(clipRotation);
     }
 
-    // !!!!!!
-    // Rework needed here to make bullets a general (abstract or interface ?) class
-    // with each bullet type inherinting from it and then overloading a Shoot() method
-    // that handles the behavior of the bullet differently. BulletSpeed goes there too.
-    //
-    // Gun class should only handle gun behavior such as firing rate, ammo,
-    // number of bullet to instantiate, etc.
-    // !!!!!!
     IEnumerator ShootBullet(int amount, float speed, float upImpusle, float delay, float precision)
     {
         audioSource.PlayOneShot(gunList[currentGun].gunSound);
@@ -769,6 +795,43 @@ public class PlayerController_test : MonoBehaviour
     #endregion
 
 
+    #region Pickups methods
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Cheese"))
+        {
+            collectedCheese += 1;
+            Objective_counter_text.text = collectedCheese.ToString();
+            PlaySoundOnPlayer(4, 1f);
+            Destroy(other.gameObject);
+        }
+        else if (other.CompareTag("Cheese_heal"))
+        {
+            if (currentHealth >= maxHealth)
+            {
+                PlaySoundOnPlayer(2, 2f);
+            }
+            else if ((currentHealth + 25f) < maxHealth)
+            {
+                currentHealth += 25f;
+                OnHeal?.Invoke(currentHealth);
+                PlaySoundOnPlayer(4, 1f);
+                _playerUI_Manager.TriggerGreenFlash();
+                Destroy(other.gameObject);
+            }
+            else
+            {
+                currentHealth = maxHealth;
+                OnHeal?.Invoke(currentHealth);
+                PlaySoundOnPlayer(4, 1f);
+                _playerUI_Manager.TriggerGreenFlash();
+                Destroy(other.gameObject);
+            }
+        }
+    }
+
+    #endregion
 
     #region Helper / debug functions
     void OnDrawGizmosSelected()

@@ -44,7 +44,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 0861635d8e3795d4cad277b1532b9ee2, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.25
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -404,6 +404,7 @@ GameObject:
   - component: {fileID: 8366251379855116509}
   - component: {fileID: 5554102709768210737}
   - component: {fileID: 6290303381632495710}
+  - component: {fileID: 3765125416664039396}
   m_Layer: 7
   m_Name: Player_test_achraf
   m_TagString: Player
@@ -480,6 +481,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 6562ba9a62b2b6745b6548787864cb95, type: 3}
   - {fileID: 8300000, guid: 3a1af377820bba048ab9c8ed2109ca61, type: 3}
   - {fileID: 8300000, guid: 56aaf5c6a61805349a048f77684fe1b4, type: 3}
+  - {fileID: 8300000, guid: 9d06afb598af4b24abfd85a44fc7a40e, type: 3}
+  - {fileID: 8300000, guid: 059a9ad779e239649a8e2cc92dd7e204, type: 3}
+  congratulationScreen: {fileID: 0}
   walkSpeed: 10
   sprintSpeed: 14
   slopeSpeed: 16
@@ -554,7 +558,7 @@ MonoBehaviour:
     gunCooldown: 0.3
     bulletPrecision: 0
     bulletPrefab: {fileID: 7831719179667508855, guid: 35419a536fb8f5a4abee68ac109a105d, type: 3}
-    gunSound: {fileID: 0}
+    gunSound: {fileID: 8300000, guid: 8f46512c76d4d2c4081793581bafe7c7, type: 3}
     customZoomFOV: 45
   gunObjets:
   - {fileID: 5781163116086216211}
@@ -576,9 +580,10 @@ MonoBehaviour:
   noShootingPosition: {x: 0, y: -90, z: 0}
   shootDisablingThreshold: 0.05
   maxHealth: 100
-  timeBeforeRegenStarts: 2.25
-  healthValueIncrement: 1
+  timeBeforeRegenStarts: 2
+  healthValueIncrement: 0.2
   healthTimeIncrement: 0.1
+  Objective_counter_text: {fileID: 0}
 --- !u!82 &6290303381632495710
 AudioSource:
   m_ObjectHideFlags: 0
@@ -675,6 +680,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!136 &3765125416664039396
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2396703812802120337}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 3.2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3514266938134504868
 GameObject:
   m_ObjectHideFlags: 0
@@ -1042,7 +1070,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5510003881014243076}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b17b0ec8e8c7e945bf3a5f8150266f3, type: 3}
   m_Name: 
@@ -1538,7 +1566,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3590e5fb4d86e0342972a4c1498d4db1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseSensitivity: 2
+  mouseSensitivity: 20
   playerBody: {fileID: 5033980705324155347}
 --- !u!1 &7412424657373415461
 GameObject:

@@ -10,12 +10,16 @@ public class PlayerUI_Manager : MonoBehaviour
     private PlayerController_test _player;
     [SerializeField] private TextMeshProUGUI healthText = default;
 
+    private bool menuOpened = false;
+
     #region Health Bar Image
 
     [SerializeField] private Image healthBarForeground;
     [SerializeField] private float updateFillSpeed = 0.3f;
     [SerializeField] private GameObject redFlashScreen;
+    [SerializeField] private GameObject greenFlashScreen;
     Coroutine redFlashCoroutine;
+    Coroutine greenFlashCoroutine;
 
     private float targetHealthPercentage = 1.0f;
     private float maxHealth;
@@ -81,6 +85,21 @@ public class PlayerUI_Manager : MonoBehaviour
         redFlashCoroutine = null;
     }
 
+    public void TriggerGreenFlash()
+    {
+        if (greenFlashCoroutine == null)
+        {
+            greenFlashCoroutine = StartCoroutine(GreenFlash());
+        }
+    }
+    IEnumerator GreenFlash()
+    {
+        greenFlashScreen.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        greenFlashScreen.SetActive(false);
+        greenFlashCoroutine = null;
+    }
+
     private void Update()
     {
         // Smoothly transition the health bar
@@ -89,7 +108,16 @@ public class PlayerUI_Manager : MonoBehaviour
         //Enable or disabled input controls information
         if(Input.GetKeyDown(KeyCode.M))
         {
-            menuPanelManager.OpenMenu();
+            if(!menuOpened)
+            {
+                menuOpened = true;
+                menuPanelManager.OpenMenu();
+            }
+            else
+            {
+                menuOpened = false;
+                menuPanelManager.ResumeGame();
+            }
         }
 
         if (_player.IsCrouching)
