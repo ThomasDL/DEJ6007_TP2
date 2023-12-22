@@ -478,6 +478,8 @@ MonoBehaviour:
   audioClips:
   - {fileID: 8300000, guid: 4ede015730a729441ab3ebb3c8bff17a, type: 3}
   - {fileID: 8300000, guid: 6562ba9a62b2b6745b6548787864cb95, type: 3}
+  - {fileID: 8300000, guid: 3a1af377820bba048ab9c8ed2109ca61, type: 3}
+  - {fileID: 8300000, guid: 56aaf5c6a61805349a048f77684fe1b4, type: 3}
   walkSpeed: 10
   sprintSpeed: 14
   slopeSpeed: 16
