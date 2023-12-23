@@ -11,7 +11,7 @@ public class SpiderController : EnemyBase
     Rigidbody thisRigidbody;
 
     float checkPlayerRepeatRate = 0.5f;
-    float rotationSpeed = 100f;
+    float rotationSpeed = 200f;
 
     float timeSinceLastAttack;
     float nextAttackDelay;

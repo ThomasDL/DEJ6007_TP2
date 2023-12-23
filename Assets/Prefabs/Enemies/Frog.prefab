@@ -102,13 +102,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57fbe46322c4e80489f338b449023789, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 20
+  maxHealth: 25
   patrolSpeed: 1
   healthSlider: {fileID: 7924361298679959185}
   patrolWaypoints:
   - {fileID: 0}
   visionPoint: {fileID: 7096117897549915136}
-  visionDistance: 50
+  visionDistance: 55
   jumpForceParticles: {fileID: 9222842896016326509}
   grenadePrefab: {fileID: 6720055664682017855, guid: b0821818296d2f643977a13e565a4361, type: 3}
   grenadeThrowPoint: {fileID: 6921090340439942806}

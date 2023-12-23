@@ -9,7 +9,7 @@ public class BullfrogController : EnemyBase
     public GameObject grenadePrefab;
 
     float visionCheckRate = 0.61f;
-    float rotationSpeed = 50f;
+    float rotationSpeed = 100f;
 
     bool isAttacking = false;
 
