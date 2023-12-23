@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class SniperBulletBehavior : MonoBehaviour
 {
-    int headshotDamage = 12;
-    int normalDamage = 5;
+    int headshotDamage = 14;
+    int normalDamage = 7;
 
 
     private PlayerController_test _playerController;
