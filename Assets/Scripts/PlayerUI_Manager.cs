@@ -18,8 +18,10 @@ public class PlayerUI_Manager : MonoBehaviour
     [SerializeField] private float updateFillSpeed = 0.3f;
     [SerializeField] private GameObject redFlashScreen;
     [SerializeField] private GameObject greenFlashScreen;
+    [SerializeField] private GameObject yellowFlashScreen;
     Coroutine redFlashCoroutine;
     Coroutine greenFlashCoroutine;
+    Coroutine yellowFlashCoroutine;
 
     private float targetHealthPercentage = 1.0f;
     private float maxHealth;
@@ -92,12 +94,26 @@ public class PlayerUI_Manager : MonoBehaviour
             greenFlashCoroutine = StartCoroutine(GreenFlash());
         }
     }
+    public void TriggerYellowFlash()
+    {
+        if (yellowFlashCoroutine == null)
+        {
+            yellowFlashCoroutine = StartCoroutine(YellowFlash());
+        }
+    }
     IEnumerator GreenFlash()
     {
         greenFlashScreen.SetActive(true);
         yield return new WaitForSeconds(0.3f);
         greenFlashScreen.SetActive(false);
         greenFlashCoroutine = null;
+    }
+    IEnumerator YellowFlash()
+    {
+        yellowFlashScreen.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        yellowFlashScreen.SetActive(false);
+        yellowFlashCoroutine = null;
     }
 
     private void Update()
@@ -108,16 +124,7 @@ public class PlayerUI_Manager : MonoBehaviour
         //Enable or disabled input controls information
         if(Input.GetKeyDown(KeyCode.M))
         {
-            if(!menuOpened)
-            {
-                menuOpened = true;
-                menuPanelManager.OpenMenu();
-            }
-            else
-            {
-                menuOpened = false;
-                menuPanelManager.ResumeGame();
-            }
+            menuPanelManager.OpenMenu();
         }
 
         if (_player.IsCrouching)

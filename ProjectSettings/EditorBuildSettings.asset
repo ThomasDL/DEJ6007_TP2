@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainScene_Achraf.unity
-    guid: 8938b9442bd08244586d72327bb4da25
+    path: Assets/Scenes/m_MainScene_Maude.unity
+    guid: 006c16a313ef15e4597bb56f442ed656
   m_configObjects: {}

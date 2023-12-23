@@ -7,6 +7,7 @@ public class MenuPanelManager : MonoBehaviour
 {
     [SerializeField] GameObject menuObject;
     [SerializeField] TextMeshProUGUI sensitivityValueText;
+    public GameObject weaponWheel;
 
     bool isOpen = true;
 
@@ -22,6 +23,7 @@ public class MenuPanelManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             menuObject.SetActive(false);
+            weaponWheel.SetActive(true);
             isOpen = false;
             Time.timeScale = 1f;
         }
@@ -30,6 +32,7 @@ public class MenuPanelManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             menuObject.SetActive(true);
+            weaponWheel.SetActive(false);
             isOpen = true;
             Time.timeScale = 0.01f;
         }

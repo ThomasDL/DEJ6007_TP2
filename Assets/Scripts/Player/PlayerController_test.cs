@@ -77,7 +77,6 @@ public class PlayerController_test : MonoBehaviour
     private KeyCode jumpKey = KeyCode.Space;
     private KeyCode zoomKey = KeyCode.Mouse1;
 
-
     // Properties to control movement + sprinting, jumping, and crouching
     public bool CanMove { get; private set; } = true;
     private bool IsSprinting => canSprint && Input.GetKey(sprintKey);
@@ -203,9 +202,9 @@ public class PlayerController_test : MonoBehaviour
     [Header("Health Parameters")]
     [SerializeField] private float maxHealth = 100f;
 
-    [SerializeField] private float timeBeforeRegenStarts = 3f;
+    [SerializeField] private float timeBeforeRegenStarts = 5f;
     [SerializeField] private float healthValueIncrement = 1f;
-    [SerializeField] private float healthTimeIncrement = 0.1f;
+    [SerializeField] private float healthTimeIncrement = 10f;
 
     private float currentHealth;
 
@@ -228,6 +227,8 @@ public class PlayerController_test : MonoBehaviour
     private int collectedCheese;
     private bool objectiveCompleted = false;
     private PlayerUI_Manager _playerUI_Manager;
+    private int cheeseSpeedBoost = 1;
+    private float cheeseSpeedBoostLength = 3f;
 
     #endregion
 
@@ -311,13 +312,6 @@ public class PlayerController_test : MonoBehaviour
         }
 
         wasGroundedLastFrame = isGrounded;
-
-        if (collectedCheese > 3 && !objectiveCompleted)
-        {
-            objectiveCompleted = true;
-            weaponHolder.GetComponent<WeaponSway>().enabled = false;
-            StartCoroutine(DisplayWinScreen());
-        }
     }
 
     private IEnumerator DisplayWinScreen()
@@ -362,7 +356,7 @@ public class PlayerController_test : MonoBehaviour
             moveDirection = transform.right * x + transform.forward * z;
         }
 
-        controller.Move(moveSpeed * Time.deltaTime * moveDirection);
+        controller.Move(moveSpeed * Time.deltaTime * moveDirection * cheeseSpeedBoost);
 
         wasGroundedLastFrame = isGrounded;
     }
@@ -614,9 +608,6 @@ public class PlayerController_test : MonoBehaviour
         {
             StopCoroutine(regeneratingHealth);
         }
-
-        // Starts the health regeneration coroutine.
-        regeneratingHealth = StartCoroutine(RegenerateHealth());
     }
 
     private void KillPlayer()
@@ -640,40 +631,6 @@ public class PlayerController_test : MonoBehaviour
         Debug.Log("Dead");
     }
 
-    // Coroutine that gradually restores the player's health over time after a delay.
-    private IEnumerator RegenerateHealth()
-    {
-        // Frame 1: Starts the coroutine.
-        // Waits for 'timeBeforeRegenStarts' seconds before executing the next line.
-        // This is a pause, not a block; other game operations continue.
-        yield return new WaitForSeconds(timeBeforeRegenStarts);
-
-        // Frame after delay: The wait is over.
-        // Sets up another wait time for health increment.
-        WaitForSeconds timeToWait = new WaitForSeconds(healthTimeIncrement);
-
-        // Enters a loop, executed once per frame.
-        while (currentHealth < maxHealth)
-        {
-            // Increases the player's health by 'healthValueIncrement'.
-            currentHealth += healthValueIncrement;
-
-            // Ensures health does not exceed the maximum limit.
-            currentHealth = Mathf.Min(currentHealth, maxHealth);
-
-            // (if not null "?") Invokes this event to update
-            // any listeners (like UI) about the health change.
-            OnHeal?.Invoke(currentHealth);
-
-            // Waits for 'healthTimeIncrement' seconds before next loop iteration.
-            // Again, this wait is non-blocking.
-            yield return timeToWait;
-        }
-
-        // Once the loop is complete (health is fully regenerated), this line is reached.
-        // Resets the coroutine reference, indicating that regeneration is complete.
-        regeneratingHealth = null;
-    }
     public float GetMaxHealth()
     {
         return maxHealth;
@@ -805,30 +762,31 @@ public class PlayerController_test : MonoBehaviour
             Objective_counter_text.text = collectedCheese.ToString();
             PlaySoundOnPlayer(4, 1f);
             Destroy(other.gameObject);
+            _playerUI_Manager.TriggerYellowFlash();
+            StartCoroutine(CheeseSpeedBoost());
         }
         else if (other.CompareTag("Cheese_heal"))
         {
-            if (currentHealth >= maxHealth)
-            {
-                PlaySoundOnPlayer(2, 2f);
-            }
-            else if ((currentHealth + 25f) < maxHealth)
-            {
-                currentHealth += 25f;
-                OnHeal?.Invoke(currentHealth);
-                PlaySoundOnPlayer(4, 1f);
-                _playerUI_Manager.TriggerGreenFlash();
-                Destroy(other.gameObject);
-            }
-            else
-            {
-                currentHealth = maxHealth;
-                OnHeal?.Invoke(currentHealth);
-                PlaySoundOnPlayer(4, 1f);
-                _playerUI_Manager.TriggerGreenFlash();
-                Destroy(other.gameObject);
-            }
+            collectedCheese += 1;
+            Objective_counter_text.text = collectedCheese.ToString();
+            currentHealth = Mathf.Min(currentHealth + 25, maxHealth);
+            OnHeal?.Invoke(currentHealth);
+            PlaySoundOnPlayer(4, 1f);
+            _playerUI_Manager.TriggerGreenFlash();
+            Destroy(other.gameObject);
         }
+        if (collectedCheese == 6 && !objectiveCompleted)
+        {
+            objectiveCompleted = true;
+            weaponHolder.GetComponent<WeaponSway>().enabled = false;
+            StartCoroutine(DisplayWinScreen());
+        }
+    }
+    IEnumerator CheeseSpeedBoost()
+    {
+        cheeseSpeedBoost = 2;
+        yield return new WaitForSeconds(cheeseSpeedBoostLength);
+        cheeseSpeedBoost = 1;
     }
 
     #endregion

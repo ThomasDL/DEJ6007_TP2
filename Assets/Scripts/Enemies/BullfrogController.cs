@@ -86,7 +86,7 @@ public class BullfrogController : EnemyBase
                 InitiateRandomAttack();
 
             }
-            else if (!base.CheckIfPlayerIsInSight() && enemyState == EnemyState.Attacking && !isAttacking)
+            else if (!base.CheckIfPlayerIsInSight() && !isAttacking)
             {
                 enemyState = EnemyState.Patrolling;
                 bossRigidbody.isKinematic = true;

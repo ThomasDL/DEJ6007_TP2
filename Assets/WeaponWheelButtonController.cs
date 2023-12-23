@@ -43,11 +43,11 @@ public class WeaponWheelButtonController : MonoBehaviour
     {
         _playerController.GetComponent<AudioSource>().PlayOneShot(buttonSelected);
         selected = true;
-        _playerController.currentGun = id;
+        if (id != 4) _playerController.currentGun = id;
 
         anim.SetBool("Hover", true);
         itemText.text = itemName;
-
+        if (id == 4) itemText.text += "<br>DLC NEEDED!";
     }
 
     public void HoverExit()
@@ -59,7 +59,7 @@ public class WeaponWheelButtonController : MonoBehaviour
 
     public void UpdateWeaponUI()
     {
-        if (selected)
+        if (selected && id != 4)
         {
             selectedItem.sprite = icon;
             selectedItem.SetNativeSize();
@@ -75,7 +75,7 @@ public class WeaponWheelButtonController : MonoBehaviour
     }
     private void PlayerController_test_onGunChanged(int gunID)
     {
-        if (gunID == id)
+        if (gunID == id && gunID != 4)
         {
             selectedItem.sprite = icon;
             selectedItem.SetNativeSize();
