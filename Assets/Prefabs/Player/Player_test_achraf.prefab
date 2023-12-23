@@ -515,7 +515,7 @@ MonoBehaviour:
     bulletSpeed: 50
     bulletUpImpusle: 1
     bulletDelay: 0.01
-    gunCooldown: 0.3
+    gunCooldown: 0.4
     bulletPrecision: 15
     bulletPrefab: {fileID: 5038152224482185999, guid: 5162eff169a672f458923ef62367402b, type: 3}
     gunSound: {fileID: 8300000, guid: 15a94b42aa4584e4cac2450f488a236a, type: 3}

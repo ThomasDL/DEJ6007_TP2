@@ -644,7 +644,6 @@ public class PlayerController_test : MonoBehaviour
         if (Input.GetButtonDown("Gun1")) currentGun = 1;
         if (Input.GetButtonDown("Gun2")) currentGun = 2;
         if (Input.GetButtonDown("Gun3")) currentGun = 3;
-        if (Input.GetButtonDown("Gun4")) currentGun = 4;
         if (lastGun != currentGun)
         {
             SwitchGun(lastGun);
